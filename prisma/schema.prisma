@@ -1,0 +1,166 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  createdAt DateTime @default(now())
+
+  users         User[]
+  conversations Conversation[]
+  quotes        Quote[]
+  suppliers     OrganizationSupplier[]
+}
+
+model User {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  name           String?
+  organizationId String
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+}
+
+model Supplier {
+  id          String    @id @default(cuid())
+  name        String
+  email       String    @unique
+  slug        String    @unique
+  phone       String?
+  address     String?
+  website     String?
+  description String?
+  isVerified  Boolean   @default(false)
+  claimedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  products      SupplierProduct[]
+  rfqResponses  RFQResponse[]
+  organizations OrganizationSupplier[]
+  quoteLines    QuoteLine[]
+}
+
+model SupplierProduct {
+  id           String   @id @default(cuid())
+  supplierId   String
+  name         String
+  description  String?
+  unit         String
+  basePrice    Float?
+  currency     String   @default("EUR")
+  leadTimeDays Int?
+  category     String   // BOM | BOS
+  createdAt    DateTime @default(now())
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+}
+
+model Conversation {
+  id             String   @id @default(cuid())
+  organizationId String
+  title          String?
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  messages     Message[]
+  quotes       Quote[]
+}
+
+model Message {
+  id             String   @id @default(cuid())
+  conversationId String
+  role           String   // user | assistant | system
+  content        String
+  metadata       String?  // JSON string
+  createdAt      DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id])
+}
+
+model Quote {
+  id             String   @id @default(cuid())
+  organizationId String
+  conversationId String?
+  title          String
+  status         String   @default("draft") // draft | rfq_sent | quoted | accepted | rejected
+  totalCost      Float?
+  margin         Float?
+  currency       String   @default("EUR")
+  clientName     String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  organization Organization  @relation(fields: [organizationId], references: [id])
+  conversation Conversation? @relation(fields: [conversationId], references: [id])
+  lines        QuoteLine[]
+  rfqs         RFQ[]
+}
+
+model QuoteLine {
+  id          String  @id @default(cuid())
+  quoteId     String
+  type        String  // BOM | BOS
+  description String
+  quantity    Float
+  unit        String
+  unitCost    Float?
+  totalCost   Float?
+  supplierId  String?
+  notes       String?
+
+  quote    Quote     @relation(fields: [quoteId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+model RFQ {
+  id            String   @id @default(cuid())
+  quoteId       String
+  token         String   @unique @default(cuid())
+  status        String   @default("pending") // pending | responded | expired | closed
+  expiresAt     DateTime
+  createdAt     DateTime @default(now())
+  supplierEmail String
+  supplierName  String?
+  items         String   // JSON: [{description, quantity, unit}]
+
+  quote     Quote         @relation(fields: [quoteId], references: [id])
+  responses RFQResponse[]
+}
+
+model RFQResponse {
+  id            String   @id @default(cuid())
+  rfqId         String
+  supplierId    String?
+  items         String   // JSON: [{description, quantity, unit, unitPrice, leadTimeDays}]
+  notes         String?
+  totalPrice    Float
+  createdAt     DateTime @default(now())
+  supplierName  String?
+  supplierEmail String?
+  supplierPhone String?
+
+  rfq      RFQ       @relation(fields: [rfqId], references: [id])
+  supplier Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+model OrganizationSupplier {
+  organizationId String
+  supplierId     String
+  notes          String?
+  isPreferred    Boolean  @default(false)
+  createdAt      DateTime @default(now())
+
+  organization Organization @relation(fields: [organizationId], references: [id])
+  supplier     Supplier     @relation(fields: [supplierId], references: [id])
+
+  @@id([organizationId, supplierId])
+}
