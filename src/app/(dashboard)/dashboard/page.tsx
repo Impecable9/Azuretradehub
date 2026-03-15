@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { FileText, Users, TrendingUp, Clock, AlertCircle, CheckCircle, ArrowRight } from "lucide-react";
+import { FileText, Users, TrendingUp, Clock, AlertCircle, CheckCircle, ArrowRight, MessageSquare } from "lucide-react";
 
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
@@ -255,5 +255,3 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-// Fix missing import
-import { MessageSquare } from "lucide-react";
