@@ -13,6 +13,8 @@ export async function GET() {
     env: {
       TURSO_DATABASE_URL: url ? `✓ (${url.slice(0, 25)}...)` : "✗ MISSING",
       TURSO_AUTH_TOKEN: authToken ? "✓ set" : "✗ MISSING",
+      ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? "✓ set" : "✗ missing",
+      OWNER_ORG_ID: process.env.OWNER_ORG_ID ?? "missing",
     },
   };
 
@@ -25,11 +27,10 @@ export async function GET() {
     info.rawLibsql = { status: "✗", error: String(e) };
   }
 
-  // Test 2: Prisma creado aquí mismo (sin usar @/lib/db)
+  // Test 2: Prisma 7 factory API (config pasado directamente a PrismaLibSql)
   try {
-    const libsql = createClient({ url: url!, authToken });
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const adapter = new PrismaLibSql(libsql as any);
+    const adapter = new PrismaLibSql({ url, authToken } as any);
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const prisma = new PrismaClient({ adapter } as any);
     const count = await prisma.organization.count();

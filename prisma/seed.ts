@@ -2,14 +2,14 @@ import * as dotenv from "dotenv";
 dotenv.config();
 import { PrismaClient } from "@prisma/client";
 import { PrismaLibSql } from "@prisma/adapter-libsql";
-import { createClient } from "@libsql/client";
 
-const libsql = createClient({
+// Prisma 7: PrismaLibSql es factory — pasar config directamente
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const adapter = new PrismaLibSql({
   url: process.env.TURSO_DATABASE_URL ?? "file:./dev.db",
   authToken: process.env.TURSO_AUTH_TOKEN,
-});
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const adapter = new PrismaLibSql(libsql as any);
+} as any);
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const prisma = new PrismaClient({ adapter } as any);
 
