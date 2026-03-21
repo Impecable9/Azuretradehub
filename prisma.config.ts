@@ -2,7 +2,8 @@ import "dotenv/config";
 import { defineConfig } from "prisma/config";
 
 // En local usa SQLite file, en producción usa Turso
-const url = process.env.TURSO_DATABASE_URL ?? process.env.DATABASE_URL ?? "file:./dev.db";
+// Para migraciones locales siempre usamos SQLite file (nunca libsql remoto)
+const url = process.env.DATABASE_URL ?? "file:./dev.db";
 
 export default defineConfig({
   schema: "prisma/schema.prisma",
