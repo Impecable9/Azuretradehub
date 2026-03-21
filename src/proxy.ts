@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 
-// Middleware ultraligero — solo comprueba cookie de sesión sin importar Prisma
+// NextAuth v5 usa cookies con prefijo "authjs." no "next-auth."
+// El auth real lo hace el layout del dashboard con auth() + redirect()
+// El proxy solo corrige el nombre correcto de las cookies
 export function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
@@ -10,21 +12,15 @@ export function proxy(req: NextRequest) {
     pathname.startsWith("/quotes") ||
     pathname.startsWith("/suppliers");
 
-  const isLoginPage = pathname.startsWith("/login");
-
-  // Comprueba cookie de sesión (NextAuth pone una de estas dos según HTTPS o no)
+  // NextAuth v5 cookie names
   const sessionToken =
-    req.cookies.get("next-auth.session-token") ??
-    req.cookies.get("__Secure-next-auth.session-token");
+    req.cookies.get("authjs.session-token") ??
+    req.cookies.get("__Secure-authjs.session-token");
 
   const isLoggedIn = !!sessionToken;
 
   if (isDashboard && !isLoggedIn) {
     return NextResponse.redirect(new URL("/login", req.nextUrl));
-  }
-
-  if (isLoginPage && isLoggedIn) {
-    return NextResponse.redirect(new URL("/dashboard", req.nextUrl));
   }
 
   return NextResponse.next();
