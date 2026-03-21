@@ -13,6 +13,10 @@ export async function GET() {
     env: {
       TURSO_DATABASE_URL: url ? `✓ (${url.slice(0, 25)}...)` : "✗ MISSING",
       TURSO_AUTH_TOKEN: authToken ? "✓ set" : "✗ MISSING",
+      AUTH_SECRET: process.env.AUTH_SECRET ? "✓ set" : "✗ MISSING",
+      NEXTAUTH_URL: process.env.NEXTAUTH_URL ?? "✗ MISSING",
+      GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID ? `✓ (${process.env.GOOGLE_CLIENT_ID.slice(0, 12)}...)` : "✗ MISSING",
+      GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET ? "✓ set" : "✗ MISSING",
       ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY ? "✓ set" : "✗ missing",
       OWNER_ORG_ID: process.env.OWNER_ORG_ID ?? "missing",
     },
