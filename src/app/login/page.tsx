@@ -1,15 +1,10 @@
 import { signIn } from "@/lib/auth";
-import { redirect } from "next/navigation";
-import { auth } from "@/lib/auth";
 
 interface Props {
   searchParams: Promise<{ verify?: string; error?: string }>;
 }
 
 export default async function LoginPage({ searchParams }: Props) {
-  const session = await auth();
-  if (session) redirect("/dashboard");
-
   const { verify, error } = await searchParams;
 
   return (
@@ -64,35 +59,6 @@ export default async function LoginPage({ searchParams }: Props) {
                 </button>
               </form>
 
-              {/* Divider */}
-              <div className="flex items-center gap-3 my-4">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-xs text-zinc-600">o</span>
-                <div className="flex-1 h-px bg-white/10" />
-              </div>
-
-              {/* Magic link */}
-              <form action={async (formData: FormData) => {
-                "use server";
-                const email = formData.get("email") as string;
-                await signIn("resend", { email, redirectTo: "/dashboard" });
-              }}>
-                <div className="space-y-3">
-                  <input
-                    type="email"
-                    name="email"
-                    required
-                    placeholder="tu@empresa.com"
-                    className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-zinc-600 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 focus:border-transparent"
-                  />
-                  <button
-                    type="submit"
-                    className="w-full bg-sky-500 hover:bg-sky-400 text-white font-semibold py-3 px-4 rounded-xl transition-all hover:scale-[1.02] active:scale-95 text-sm"
-                  >
-                    Enviar enlace mágico
-                  </button>
-                </div>
-              </form>
             </>
           )}
         </div>
