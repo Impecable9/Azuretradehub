@@ -7,7 +7,7 @@ import { FileText, Users, TrendingUp, Clock, AlertCircle, CheckCircle, ArrowRigh
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
 export default async function DashboardPage() {
-  const [quotes, suppliers, rfqs, messages] = await Promise.all([
+  const [quotes, suppliers, rfqs, messages, waitlist] = await Promise.all([
     prisma.quote.findMany({
       where: { organizationId: ORG_ID },
       include: { lines: true, rfqs: { include: { responses: true } } },
@@ -22,6 +22,7 @@ export default async function DashboardPage() {
     prisma.message.count({
       where: { conversation: { organizationId: ORG_ID } },
     }),
+    prisma.waitlist.findMany({ orderBy: { createdAt: "desc" } }),
   ]);
 
   const now = new Date();
@@ -223,6 +224,31 @@ export default async function DashboardPage() {
             </div>
           )}
         </div>
+
+        {/* Waitlist */}
+        {waitlist.length > 0 && (
+          <div className="bg-white rounded-2xl border border-amber-200 overflow-hidden">
+            <div className="px-5 py-4 border-b border-amber-100 flex items-center gap-2">
+              <span className="text-amber-500">⏳</span>
+              <h2 className="font-bold text-slate-900">Lista de espera ({waitlist.length})</h2>
+              <span className="text-xs text-slate-400 ml-auto">Añade el email a ALLOWED_EMAILS en Vercel para dar acceso</span>
+            </div>
+            <div className="divide-y divide-slate-100">
+              {waitlist.map((w) => (
+                <div key={w.id} className="px-5 py-3 flex items-center gap-3">
+                  {w.image && <img src={w.image} alt="" className="w-7 h-7 rounded-full" />}
+                  <div>
+                    <div className="text-sm font-medium text-slate-800">{w.name ?? "—"}</div>
+                    <div className="text-xs text-slate-400 select-all">{w.email}</div>
+                  </div>
+                  <div className="ml-auto text-xs text-slate-400">
+                    {new Date(w.createdAt).toLocaleDateString("es-ES")}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>

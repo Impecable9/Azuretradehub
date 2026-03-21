@@ -192,6 +192,15 @@ model RFQResponse {
   supplier Supplier? @relation(fields: [supplierId], references: [id])
 }
 
+model Waitlist {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?
+  createdAt DateTime @default(now())
+  notified  Boolean  @default(false)
+}
+
 model OrganizationSupplier {
   organizationId String
   supplierId     String

@@ -1,5 +1,6 @@
 import NextAuth from "next-auth";
 import Google from "next-auth/providers/google";
+import { prisma } from "@/lib/db";
 
 // Auth simplificado: JWT sessions + Google OAuth
 // Magic link se añade cuando RESEND_API_KEY esté configurada
@@ -17,8 +18,17 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   callbacks: {
     async signIn({ user }) {
       const allowed = process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim()) ?? [];
-      if (allowed.length === 0) return true; // si no hay lista, permitir todos (desarrollo)
-      return allowed.includes(user.email ?? "");
+      if (allowed.length === 0) return true; // sin lista → permitir todos (desarrollo)
+      if (allowed.includes(user.email ?? "")) return true;
+      // Email no autorizado → guardar en waitlist y redirigir
+      try {
+        await prisma.waitlist.upsert({
+          where: { email: user.email ?? "" },
+          update: {},
+          create: { email: user.email ?? "", name: user.name, image: user.image },
+        });
+      } catch { /* silencioso */ }
+      return "/en-espera";
     },
     async jwt({ token, user }) {
       if (user) token.id = user.id;
