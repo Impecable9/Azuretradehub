@@ -17,6 +17,7 @@ model Organization {
   conversations Conversation[]
   quotes        Quote[]
   suppliers     OrganizationSupplier[]
+  settings      OrganizationSettings?
 }
 
 model User {
@@ -190,6 +191,15 @@ model RFQResponse {
 
   rfq      RFQ       @relation(fields: [rfqId], references: [id])
   supplier Supplier? @relation(fields: [supplierId], references: [id])
+}
+
+model OrganizationSettings {
+  id              String   @id @default(cuid())
+  organizationId  String   @unique
+  encryptedApiKey String?  // AES-256-GCM cifrado
+  updatedAt       DateTime @updatedAt
+
+  organization Organization @relation(fields: [organizationId], references: [id])
 }
 
 model Waitlist {

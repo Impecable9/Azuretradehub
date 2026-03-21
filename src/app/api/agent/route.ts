@@ -3,6 +3,7 @@ export const maxDuration = 60;
 import { NextRequest, NextResponse } from "next/server";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { decrypt } from "@/lib/crypto";
 import { streamAgentResponse, extractQuoteFromResponse } from "@/lib/agent";
 import { buildSystemPrompt } from "@/lib/agent/system-prompt";
 import { z } from "zod";
@@ -21,6 +22,13 @@ export async function POST(req: NextRequest) {
   if (!body.success) return NextResponse.json({ error: "Invalid input" }, { status: 400 });
 
   const { conversationId, message, organizationId } = body.data;
+
+  // Obtener API key del usuario si tiene configurada
+  let userApiKey: string | undefined;
+  try {
+    const settings = await prisma.organizationSettings.findUnique({ where: { organizationId } });
+    if (settings?.encryptedApiKey) userApiKey = decrypt(settings.encryptedApiKey);
+  } catch { /* usa key de plataforma */ }
 
   // Load or create conversation
   let conversation;
@@ -79,7 +87,8 @@ export async function POST(req: NextRequest) {
           (chunk) => {
             fullResponse += chunk;
             controller.enqueue(encoder.encode(`data: ${JSON.stringify({ chunk })}\n\n`));
-          }
+          },
+          userApiKey
         );
 
         // Save assistant message

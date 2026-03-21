@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users, LogOut } from "lucide-react";
+import { LayoutDashboard, FileText, Users, LogOut, Settings } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", label: "Dashboard",    icon: LayoutDashboard },
   { href: "/quotes",    label: "Presupuestos", icon: FileText },
   { href: "/suppliers", label: "Proveedores",  icon: Users },
+  { href: "/settings",  label: "Configuración", icon: Settings },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {

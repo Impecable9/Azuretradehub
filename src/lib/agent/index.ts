@@ -1,18 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { ChatMessage } from "@/types";
 
-const client = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-});
-
 export async function streamAgentResponse(
   messages: ChatMessage[],
   systemPrompt: string,
-  onChunk: (text: string) => void
+  onChunk: (text: string) => void,
+  apiKey?: string // clave del usuario si tiene configurada
 ): Promise<string> {
+  const client = new Anthropic({ apiKey: apiKey ?? process.env.ANTHROPIC_API_KEY });
   let fullResponse = "";
 
-  const stream = client.messages.stream({
+  const stream = await client.messages.stream({
     model: "claude-sonnet-4-6",
     max_tokens: 4096,
     system: systemPrompt,
