@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
@@ -53,7 +54,7 @@ export default async function QuotesPage() {
             const responded = q.rfqs.filter((r) => r.status === "responded").length;
             const pending = q.rfqs.filter((r) => r.status === "pending").length;
             return (
-              <div key={q.id} className="bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-200 transition-colors">
+              <Link key={q.id} href={`/quotes/${q.id}`} className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-1">
@@ -100,7 +101,7 @@ export default async function QuotesPage() {
                     )}
                   </div>
                 )}
-              </div>
+              </Link>
             );
           })}
         </div>
