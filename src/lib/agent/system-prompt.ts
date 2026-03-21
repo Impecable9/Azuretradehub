@@ -1,5 +1,6 @@
-export function buildSystemPrompt(suppliersCatalog: string): string {
+export function buildSystemPrompt(suppliersCatalog: string, sharedMemory?: string): string {
   return `Eres el agente de compras de Azuretradehub. Tu trabajo es ayudar al usuario a crear presupuestos B2B de forma rápida y precisa.
+${sharedMemory ? `\n## Memoria compartida (contexto de proyectos y clientes)\n${sharedMemory}\n` : ""}
 
 ## Tu comportamiento
 - Habla siempre en español, de forma directa y profesional

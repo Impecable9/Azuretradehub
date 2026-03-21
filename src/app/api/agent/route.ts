@@ -51,10 +51,11 @@ export async function POST(req: NextRequest) {
     data: { conversationId: conversation.id, role: "user", content: message },
   });
 
-  // Load supplier catalog for system prompt
-  const suppliers = await prisma.supplier.findMany({
-    include: { products: true },
-  });
+  // Load supplier catalog + shared memory for system prompt
+  const [suppliers, memories] = await Promise.all([
+    prisma.supplier.findMany({ include: { products: true } }),
+    prisma.sharedMemory.findMany({ orderBy: { updatedAt: "desc" } }),
+  ]);
 
   const catalogText = suppliers.length === 0
     ? "No hay proveedores registrados aún. Indica al usuario que añada proveedores en el panel de gestión."
@@ -67,7 +68,11 @@ export async function POST(req: NextRequest) {
         })
         .join("\n\n");
 
-  const systemPrompt = buildSystemPrompt(catalogText);
+  const memoryText = memories.length > 0
+    ? memories.map(m => `[${m.key}]: ${m.content}`).join("\n\n")
+    : undefined;
+
+  const systemPrompt = buildSystemPrompt(catalogText, memoryText);
 
   const history = conversation.messages.map((m) => ({
     role: m.role as "user" | "assistant",
