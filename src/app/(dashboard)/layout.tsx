@@ -1,16 +1,21 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users } from "lucide-react";
+import { LayoutDashboard, FileText, Users, LogOut } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
+import { auth, signOut } from "@/lib/auth";
+import { redirect } from "next/navigation";
 
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
 const navItems = [
-  { href: "/dashboard", label: "Dashboard",     icon: LayoutDashboard },
-  { href: "/quotes",    label: "Presupuestos",  icon: FileText },
-  { href: "/suppliers", label: "Proveedores",   icon: Users },
+  { href: "/dashboard", label: "Dashboard",    icon: LayoutDashboard },
+  { href: "/quotes",    label: "Presupuestos", icon: FileText },
+  { href: "/suppliers", label: "Proveedores",  icon: Users },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const session = await auth();
+  if (!session) redirect("/login");
+
   return (
     <div className="flex h-screen bg-slate-50">
       {/* Sidebar */}
@@ -33,8 +38,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
           ))}
         </nav>
-        <div className="px-4 py-4 border-t border-slate-800">
-          <div className="text-xs text-slate-500">MVP · Fase 0</div>
+        <div className="px-4 py-4 border-t border-slate-800 space-y-3">
+          <div className="text-xs text-slate-500 truncate">{session.user?.email}</div>
+          <form action={async () => {
+            "use server";
+            await signOut({ redirectTo: "/" });
+          }}>
+            <button type="submit" className="flex items-center gap-2 text-xs text-slate-500 hover:text-white transition-colors">
+              <LogOut className="w-3 h-3" />
+              Cerrar sesión
+            </button>
+          </form>
         </div>
       </aside>
 
@@ -43,7 +57,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         {children}
       </main>
 
-      {/* Chat drawer (floating, always visible) */}
       <ChatDrawer organizationId={ORG_ID} />
     </div>
   );
