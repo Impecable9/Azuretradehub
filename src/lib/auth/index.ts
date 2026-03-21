@@ -15,6 +15,11 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     signIn: "/login",
   },
   callbacks: {
+    async signIn({ user }) {
+      const allowed = process.env.ALLOWED_EMAILS?.split(",").map((e) => e.trim()) ?? [];
+      if (allowed.length === 0) return true; // si no hay lista, permitir todos (desarrollo)
+      return allowed.includes(user.email ?? "");
+    },
     async jwt({ token, user }) {
       if (user) token.id = user.id;
       return token;
