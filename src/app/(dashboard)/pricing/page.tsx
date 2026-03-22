@@ -63,15 +63,15 @@ export default async function PricingPage() {
     silicona_m:     extractCost(["silicona"]),                      // € per m
   };
 
-  // ALIGN: N52 D5×2mm magnets every 3cm = ~33 imanes/m²
-  const IMANES_PER_M2 = 33;
+  // ALIGN: 336 imanes N52 D5×2mm por panel (38×78cm = 0.2964 m²)
+  const IMANES_PER_PANEL = 336;
   const EPOXY_KG_PER_M2 = 0.05; // 2mm layer ≈ 50g/m²
 
   return (
     <PricingClient
       sizes={SIZES as unknown as typeof SIZES}
       unitCosts={unitCosts}
-      imanesPerM2={IMANES_PER_M2}
+      imanesPerPanel={IMANES_PER_PANEL}
       epoxyKgPerM2={EPOXY_KG_PER_M2}
     />
   );

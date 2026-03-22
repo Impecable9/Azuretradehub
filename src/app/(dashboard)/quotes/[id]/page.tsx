@@ -3,7 +3,7 @@ export const dynamic = "force-dynamic";
 import { prisma } from "@/lib/db";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {
   draft:    { label: "BORRADOR",    color: "bg-slate-200 text-slate-700" },
@@ -72,6 +72,12 @@ const LAYERS: Layer[] = [
     keywords: [], // BOS lines go here
   },
 ];
+
+function layerDestination(layerKey: string, supplierId?: string | null): string {
+  if (layerKey === "tela") return "/products?tab=1";
+  if (layerKey === "accesorios") return "/products?tab=2";
+  return "/suppliers"; // tablero, nfc, servicios → go to suppliers
+}
 
 function classifyLine(line: { type: string; description: string }): string {
   if (line.type === "BOS") return "servicios";
@@ -224,22 +230,34 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100/60">
-                  {lines.map((l, i) => (
-                    <tr key={i} className="hover:bg-slate-50/60 transition-colors duration-100">
-                      <td className="px-5 py-3.5 font-medium text-slate-800 text-sm">{l.description}</td>
-                      <td className="px-5 py-3.5 text-right tabular-nums text-slate-700">{l.quantity}</td>
-                      <td className="px-5 py-3.5 text-right text-slate-400 text-sm">{l.unit}</td>
-                      <td className="px-5 py-3.5 text-right tabular-nums text-sm">
-                        {l.unitCost != null
-                          ? <span className="text-slate-800">{l.unitCost.toFixed(2)} €</span>
-                          : <span className="text-amber-400 font-semibold">Sin precio</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-right tabular-nums font-black text-slate-900">
-                        {l.totalCost != null ? `${l.totalCost.toFixed(2)} €` : <span className="text-amber-400 font-normal">—</span>}
-                      </td>
-                      <td className="px-5 py-3.5 text-slate-400 text-xs">{l.supplier?.name ?? "—"}</td>
-                    </tr>
-                  ))}
+                  {lines.map((l, i) => {
+                    const dest = layerDestination(layer.key, l.supplierId);
+                    return (
+                      <tr key={i} className="hover:bg-slate-50 transition-colors duration-100 group cursor-pointer">
+                        <td className="px-5 py-3.5 font-medium text-slate-800 text-sm">
+                          <Link href={dest} className="flex items-center gap-2 hover:text-violet-700 transition-colors">
+                            {l.description}
+                            <ExternalLink className="w-3 h-3 text-slate-300 group-hover:text-violet-400 opacity-0 group-hover:opacity-100 transition-all shrink-0" />
+                          </Link>
+                        </td>
+                        <td className="px-5 py-3.5 text-right tabular-nums text-slate-700">{l.quantity}</td>
+                        <td className="px-5 py-3.5 text-right text-slate-400 text-sm">{l.unit}</td>
+                        <td className="px-5 py-3.5 text-right tabular-nums text-sm">
+                          {l.unitCost != null
+                            ? <span className="text-slate-800">{l.unitCost.toFixed(2)} €</span>
+                            : <span className="text-amber-400 font-semibold">Sin precio</span>}
+                        </td>
+                        <td className="px-5 py-3.5 text-right tabular-nums font-black text-slate-900">
+                          {l.totalCost != null ? `${l.totalCost.toFixed(2)} €` : <span className="text-amber-400 font-normal">—</span>}
+                        </td>
+                        <td className="px-5 py-3.5 text-xs">
+                          {l.supplier
+                            ? <Link href="/suppliers" className="text-blue-500 hover:text-blue-700 hover:underline">{l.supplier.name}</Link>
+                            : <span className="text-slate-300">—</span>}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
                 <tfoot>
                   <tr className="border-t-2 border-slate-100">

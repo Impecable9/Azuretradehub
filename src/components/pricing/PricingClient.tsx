@@ -27,7 +27,7 @@ type UnitCosts = {
 type Props = {
   sizes: readonly Size[];
   unitCosts: UnitCosts;
-  imanesPerM2: number;
+  imanesPerPanel: number;
   epoxyKgPerM2: number;
 };
 
@@ -105,7 +105,7 @@ const ACCESSORY_COSTS: Record<string, number> = {
   "Marco BGA Classic": 28,
 };
 
-export function PricingClient({ sizes, unitCosts, imanesPerM2, epoxyKgPerM2 }: Props) {
+export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }: Props) {
   const [variant, setVariant] = useState<"FREE" | "ALIGN">("ALIGN");
   const [margin, setMargin] = useState(60); // 60% default margin
   const [showPsych, setShowPsych] = useState(true);
@@ -130,7 +130,7 @@ export function PricingClient({ sizes, unitCosts, imanesPerM2, epoxyKgPerM2 }: P
     };
 
     if (v === "ALIGN") {
-      const imanCount = Math.ceil(chapa_area * imanesPerM2);
+      const imanCount = imanesPerPanel * size.panels;
       const epoxyKg = chapa_area * epoxyKgPerM2;
       breakdown["Imanes N52"] = costs.iman_ud != null ? costs.iman_ud * imanCount : null;
       breakdown["Epoxy 2mm"] = costs.epoxy_kg != null ? costs.epoxy_kg * epoxyKg : null;

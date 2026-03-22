@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 
 const SIZES = [
@@ -107,7 +108,16 @@ const ACCESSORIES = [
 const TABS = ["Tamaños", "Telas y acabados", "Accesorios"];
 
 export default function ProductsPage() {
-  const [tab, setTab] = useState(0);
+  const searchParams = useSearchParams();
+  const [tab, setTab] = useState(() => {
+    const t = searchParams.get("tab");
+    return t ? parseInt(t, 10) : 0;
+  });
+
+  useEffect(() => {
+    const t = searchParams.get("tab");
+    if (t !== null) setTab(parseInt(t, 10));
+  }, [searchParams]);
 
   return (
     <div className="space-y-6">
