@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, Star, Folder, Monitor } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3 } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -7,10 +7,11 @@ import { redirect } from "next/navigation";
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
 const navItems = [
-  { href: "/dashboard", icon: LayoutDashboard },
-  { href: "/quotes",    icon: FileText },
-  { href: "/suppliers", icon: Users },
-  { href: "/settings",  icon: Settings },
+  { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
+  { href: "/quotes",    icon: FileText,         label: "Presupuestos" },
+  { href: "/products",  icon: Grid3x3,          label: "Productos" },
+  { href: "/suppliers", icon: Users,            label: "Proveedores" },
+  { href: "/settings",  icon: Settings,         label: "Configuración" },
 ];
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
