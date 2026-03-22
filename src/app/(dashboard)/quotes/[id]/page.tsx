@@ -37,7 +37,7 @@ const LAYERS: Layer[] = [
     icon: "🪵",
     color: "text-amber-700",
     bg: "bg-amber-50",
-    keywords: ["mdf", "madera", "tablero", "chapa", "acero", "hierro", "metal", "imán", "iman", "magnet", "neodimio", "epoxy", "epoxi", "adhesivo", "perfil", "seg", "aluminio", "silicona"],
+    keywords: ["mdf", "madera", "tablero", "chapa", "acero", "hierro", "metal", "imán", "iman", "magnet", "neodimio", "epoxy", "epoxi", "adhesivo", "perfil", "seg", "aluminio", "silicona", "nfc", "chip", "ntag", "rfid"],
   },
   {
     key: "tela",
@@ -61,7 +61,7 @@ const LAYERS: Layer[] = [
     icon: "📡",
     color: "text-green-700",
     bg: "bg-green-50",
-    keywords: ["nfc", "chip", "ntag", "rfid"],
+    keywords: [], // chips go into tablero layer
   },
   {
     key: "servicios",
