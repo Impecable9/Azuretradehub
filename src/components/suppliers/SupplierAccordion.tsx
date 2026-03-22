@@ -66,9 +66,23 @@ function categorize(suppliers: Supplier[]): Category[] {
   return result;
 }
 
+const NATIONAL_KEYWORDS = ["málaga", "malaga", "marbella", "españa", "spain", "es", "madrid", "barcelona", "valencia", "sevilla", ".es"];
+const INTERNATIONAL_KEYWORDS = ["aliexpress", "china", "amazon", "bricometal", "tosize", "shopnfc", "online", ".com", ".nl", ".de"];
+
+function isNational(s: Supplier) {
+  const text = `${s.name} ${s.description ?? ""} ${s.website ?? ""} ${s.email ?? ""}`.toLowerCase();
+  return NATIONAL_KEYWORDS.some((k) => text.includes(k));
+}
+
 export function SupplierAccordion({ suppliers }: { suppliers: Supplier[] }) {
-  const categories = categorize(suppliers);
-  const [open, setOpen] = useState<string | null>(categories[0]?.label ?? null);
+  const [filter, setFilter] = useState<"all" | "nacional" | "internacional">("all");
+  const filtered = suppliers.filter((s) => {
+    if (filter === "nacional") return isNational(s);
+    if (filter === "internacional") return !isNational(s);
+    return true;
+  });
+  const categories = categorize(filtered);
+  const [open, setOpen] = useState<Set<string>>(new Set(categories.map((c) => c.label)));
 
   if (suppliers.length === 0) {
     return (
@@ -81,16 +95,36 @@ export function SupplierAccordion({ suppliers }: { suppliers: Supplier[] }) {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-4">
+      {/* Filter */}
+      <div className="flex items-center gap-2">
+        {(["all", "nacional", "internacional"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`px-4 py-1.5 rounded-xl text-xs font-bold transition-all duration-150 ${
+              filter === f ? "bg-slate-900 text-white" : "bg-white border border-slate-200 text-slate-500 hover:text-slate-800"
+            }`}
+          >
+            {f === "all" ? `Todos (${suppliers.length})` : f === "nacional" ? `🇪🇸 Nacional` : `🌍 Internacional`}
+          </button>
+        ))}
+      </div>
+      <div className="space-y-2">
       {categories.map((cat) => {
-        const isOpen = open === cat.label;
+        const isOpen = open.has(cat.label);
         const totalProducts = cat.suppliers.reduce((a, s) => a + s.products.length, 0);
 
         return (
           <div key={cat.label} className="bg-white rounded-2xl border border-slate-200 overflow-hidden transition-all">
             {/* Category header */}
             <button
-              onClick={() => setOpen(isOpen ? null : cat.label)}
+              onClick={() => {
+                const next = new Set(open);
+                if (next.has(cat.label)) next.delete(cat.label);
+                else next.add(cat.label);
+                setOpen(next);
+              }}
               className="w-full flex items-center justify-between px-5 py-4 hover:bg-slate-50 transition-colors"
             >
               <div className="flex items-center gap-3">
@@ -122,6 +156,10 @@ export function SupplierAccordion({ suppliers }: { suppliers: Supplier[] }) {
                           {s.claimedAt && (
                             <span className="text-xs bg-green-100 text-green-700 font-medium px-1.5 py-0.5 rounded-md">Activo</span>
                           )}
+                          {isNational(s)
+                            ? <span className="text-xs bg-blue-50 text-blue-600 font-medium px-1.5 py-0.5 rounded-md">🇪🇸 Recogida</span>
+                            : <span className="text-xs bg-orange-50 text-orange-600 font-medium px-1.5 py-0.5 rounded-md">🚚 + Transporte</span>
+                          }
                         </div>
                         {s.description && (
                           <p className="text-sm text-slate-500 line-clamp-2 mb-2">{s.description}</p>
@@ -182,6 +220,7 @@ export function SupplierAccordion({ suppliers }: { suppliers: Supplier[] }) {
           </div>
         );
       })}
+    </div>
     </div>
   );
 }

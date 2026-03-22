@@ -48,15 +48,15 @@ const SIZES = [
 ];
 
 const FABRICS = [
-  { name: "Atenas",    style: "Mármol azul grisáceo",    bg: "linear-gradient(135deg, #b8c5d6, #8fa5bc)" },
-  { name: "Milán",     style: "Mármol oscuro",           bg: "linear-gradient(135deg, #1a2535, #0d1520)" },
-  { name: "París",     style: "Mármol gris claro",       bg: "linear-gradient(135deg, #d4d9e0, #b8bfc8)" },
-  { name: "Cairo",     style: "Cemento beige cálido",    bg: "linear-gradient(135deg, #b5a898, #9e917f)" },
-  { name: "Londres",   style: "Cemento gris claro",      bg: "linear-gradient(135deg, #c8cdd4, #adb3bc)" },
-  { name: "Berlín",    style: "Cemento gris neutro",     bg: "linear-gradient(135deg, #a8adb4, #8e949d)" },
-  { name: "Bali",      style: "Tropical exótico",        bg: "linear-gradient(135deg, #1a4a2e, #2d7a4f)" },
-  { name: "Mallorca",  style: "Tropical monstera",       bg: "linear-gradient(135deg, #2d6e3c, #4a9e5c)" },
-  { name: "San Paulo", style: "Tropical colorido",       bg: "linear-gradient(135deg, #1b3a5c, #2d6e8a)" },
+  { name: "Atenas",    style: "Mármol azul grisáceo",  img: "/products/fabrics/atenas.jpg" },
+  { name: "Milán",     style: "Mármol oscuro",          img: "/products/fabrics/milan.jpg" },
+  { name: "París",     style: "Mármol gris claro",      img: "/products/fabrics/paris.jpg" },
+  { name: "Cairo",     style: "Cemento beige cálido",   img: "/products/fabrics/cairo.jpg" },
+  { name: "Londres",   style: "Cemento gris claro",     img: "/products/fabrics/londres.png" },
+  { name: "Berlín",    style: "Cemento gris neutro",    img: "/products/fabrics/berlin.jpg" },
+  { name: "Bali",      style: "Tropical exótico",       img: "/products/fabrics/bali.png" },
+  { name: "Mallorca",  style: "Tropical monstera",      img: "/products/fabrics/mallorca.jpg" },
+  { name: "San Paulo", style: "Tropical colorido",      img: "/products/fabrics/sanpaulo.png" },
 ];
 
 const ACCESSORIES = [
@@ -179,10 +179,13 @@ export default function ProductsPage() {
           <div className="grid grid-cols-3 gap-4">
             {FABRICS.map((f) => (
               <div key={f.name} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 group">
-                <div
-                  className="h-32 w-full transition-transform duration-300 group-hover:scale-105"
-                  style={{ background: f.bg }}
-                />
+                <div className="h-32 w-full overflow-hidden">
+                  <img
+                    src={f.img}
+                    alt={f.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
                 <div className="p-4">
                   <h3 className="font-black text-slate-900 uppercase">{f.name}</h3>
                   <p className="text-xs text-slate-400 mt-0.5">{f.style}</p>
