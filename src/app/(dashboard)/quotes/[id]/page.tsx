@@ -34,7 +34,7 @@ const LAYERS: Layer[] = [
   {
     key: "tablero",
     label: "Tablero",
-    icon: "🪵",
+    icon: "📦",
     color: "text-amber-700",
     bg: "bg-amber-50",
     keywords: ["mdf", "madera", "tablero", "chapa", "acero", "hierro", "metal", "imán", "iman", "magnet", "neodimio", "epoxy", "epoxi", "adhesivo", "perfil", "seg", "aluminio", "silicona", "nfc", "chip", "ntag", "rfid"],
