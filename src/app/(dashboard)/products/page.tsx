@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 
 const SIZES = [
   {
@@ -65,41 +66,41 @@ const ACCESSORIES = [
     category: "Marcos",
     desc: "Madera de roble fino con paspartú blanco",
     sizes: ["15×15 cm", "20×20 cm"],
-    icon: "🖼",
+    img: "/products/accessories/marco-roble.jpg",
   },
   {
     name: "Marco BGA Classic",
     category: "Marcos",
     desc: "Madera de roble Classic con paspartú blanco",
     sizes: ["20×20 cm"],
-    icon: "🖼",
+    img: "/products/accessories/marco-bga.jpg",
   },
   {
     name: "The Craw",
     category: "Estanterías",
     desc: "Sostiene bloc A4 y elementos decorativos ligeros. Ideal para listas, calendarios o relojes.",
     capacity: "hasta 0.6 kg",
-    icon: "📋",
+    img: "/products/accessories/the-craw.jpg",
   },
   {
     name: "The Wing",
     category: "Estanterías",
     desc: "Perfecto para libros, relojes y plantas. Diseño funcional y decorativo.",
     capacity: "hasta 3 kg",
-    icon: "📚",
+    img: "/products/accessories/the-wing.jpg",
   },
   {
     name: "The Nest",
     category: "Estanterías",
     desc: "Para objetos ligeros como lapiceros o suculentas.",
     capacity: "hasta 1.4 kg",
-    icon: "🪴",
+    img: "/products/accessories/the-nest-shelf.jpg",
   },
   {
     name: "The Pins",
     category: "Organización",
     desc: "Para guardar documentos y recuerdos. Combina organización y estilo.",
-    icon: "📌",
+    img: "/products/accessories/the-pins.jpg",
   },
 ];
 
@@ -179,11 +180,13 @@ export default function ProductsPage() {
           <div className="grid grid-cols-3 gap-4">
             {FABRICS.map((f) => (
               <div key={f.name} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 group">
-                <div className="h-32 w-full overflow-hidden">
-                  <img
+                <div className="h-32 w-full overflow-hidden relative">
+                  <Image
                     src={f.img}
                     alt={f.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    fill
+                    className="object-cover transition-transform duration-300 group-hover:scale-105"
+                    sizes="(max-width: 768px) 50vw, 33vw"
                   />
                 </div>
                 <div className="p-4">
@@ -204,30 +207,36 @@ export default function ProductsPage() {
 
       {/* Tab: Accesorios */}
       {tab === 2 && (
-        <div className="space-y-4">
+        <div className="space-y-5">
           {["Marcos", "Estanterías", "Organización"].map((cat) => {
             const items = ACCESSORIES.filter((a) => a.category === cat);
             if (!items.length) return null;
             return (
               <div key={cat}>
                 <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-3">{cat}</h2>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-4">
                   {items.map((a) => (
-                    <div key={a.name} className="bg-white rounded-2xl border border-slate-100 shadow-sm p-5 flex gap-4 hover:shadow-md transition-all duration-200">
-                      <div className="text-3xl shrink-0">{a.icon}</div>
-                      <div>
-                        <h3 className="font-black text-slate-900">{a.name}</h3>
-                        <p className="text-sm text-slate-500 mt-1">{a.desc}</p>
-                        {"sizes" in a && a.sizes && (
-                          <div className="flex gap-1.5 mt-2">
-                            {a.sizes.map((sz: string) => (
-                              <span key={sz} className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{sz}</span>
-                            ))}
-                          </div>
-                        )}
-                        {"capacity" in a && a.capacity && (
-                          <span className="inline-block mt-2 text-[10px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{a.capacity}</span>
-                        )}
+                    <div key={a.name} className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden hover:shadow-md transition-all duration-200 group">
+                      <div className="h-44 w-full overflow-hidden relative bg-slate-50">
+                        <Image
+                          src={a.img}
+                          alt={a.name}
+                          fill
+                          className="object-cover transition-transform duration-300 group-hover:scale-105"
+                          sizes="(max-width: 768px) 100vw, 33vw"
+                        />
+                      </div>
+                      <div className="p-4">
+                        <h3 className="font-black text-slate-900 uppercase">{a.name}</h3>
+                        <p className="text-xs text-slate-500 mt-1 leading-relaxed">{a.desc}</p>
+                        <div className="flex flex-wrap gap-1.5 mt-3">
+                          {"sizes" in a && a.sizes && a.sizes.map((sz: string) => (
+                            <span key={sz} className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{sz}</span>
+                          ))}
+                          {"capacity" in a && a.capacity && (
+                            <span className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{a.capacity}</span>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))}

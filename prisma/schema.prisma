@@ -196,7 +196,9 @@ model RFQResponse {
 model OrganizationSettings {
   id              String   @id @default(cuid())
   organizationId  String   @unique
-  encryptedApiKey String?  // AES-256-GCM cifrado
+  encryptedApiKey String?  // AES-256-GCM cifrado (Anthropic legacy)
+  providerKeys    String?  // JSON: { [provider]: encryptedKey } AES-256-GCM
+  activeProvider  String?  // "anthropic" | "openai" | "groq" | "mistral" | "platform"
   updatedAt       DateTime @updatedAt
 
   organization Organization @relation(fields: [organizationId], references: [id])

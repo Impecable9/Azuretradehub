@@ -16,10 +16,11 @@ export async function GET(req: NextRequest) {
 export async function POST(req: NextRequest) {
   if (!requireApiKey(req)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { name, email, phone, website, description } = await req.json();
-  if (!name || !email) return NextResponse.json({ error: "name and email are required" }, { status: 400 });
+  const { name, email: rawEmail, phone, website, description } = await req.json();
+  if (!name) return NextResponse.json({ error: "name is required" }, { status: 400 });
 
   const slug = name.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const email = rawEmail || `noreply+${slug}@azuretradehub.internal`;
 
   const supplier = await prisma.supplier.upsert({
     where: { email },

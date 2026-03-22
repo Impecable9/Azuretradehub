@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3 } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3, TrendingUp } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -10,6 +10,7 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/quotes",    icon: FileText,         label: "Presupuestos" },
   { href: "/products",  icon: Grid3x3,          label: "Productos" },
+  { href: "/pricing",   icon: TrendingUp,       label: "Precios" },
   { href: "/suppliers", icon: Users,            label: "Proveedores" },
   { href: "/settings",  icon: Settings,         label: "Configuración" },
 ];
