@@ -16,8 +16,8 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 // Detect Phoenix Wall variant from quote title/notes
 function detectVariant(title: string, notes?: string | null): "FREE" | "ALIGN" | null {
   const text = `${title} ${notes ?? ""}`.toLowerCase();
-  if (text.includes("align")) return "ALIGN";
-  if (text.includes("free")) return "FREE";
+  if (text.includes("| align") || text.includes("align")) return "ALIGN";
+  if (text.includes("| free") || text.includes("free")) return "FREE";
   return null;
 }
 
