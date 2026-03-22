@@ -5,12 +5,12 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 
-const STATUS_MAP: Record<string, { label: string; class: string }> = {
-  draft:    { label: "Borrador",    class: "bg-slate-100 text-slate-600" },
-  rfq_sent: { label: "RFQ enviado", class: "bg-amber-100 text-amber-700" },
-  quoted:   { label: "Cotizado",    class: "bg-blue-100 text-blue-700" },
-  accepted: { label: "Aceptado",   class: "bg-green-100 text-green-700" },
-  rejected: { label: "Rechazado",  class: "bg-red-100 text-red-700" },
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  draft:    { label: "BORRADOR",    color: "bg-slate-200 text-slate-700" },
+  rfq_sent: { label: "RFQ ENVIADO", color: "bg-amber-300 text-amber-900" },
+  quoted:   { label: "COTIZADO",    color: "bg-blue-200 text-blue-900" },
+  accepted: { label: "ACEPTADO",    color: "bg-[#d6ff6b] text-slate-900" },
+  rejected: { label: "RECHAZADO",   color: "bg-rose-200 text-rose-900" },
 };
 
 export default async function QuoteDetailPage({ params }: { params: Promise<{ id: string }> }) {
@@ -18,171 +18,168 @@ export default async function QuoteDetailPage({ params }: { params: Promise<{ id
 
   const quote = await prisma.quote.findUnique({
     where: { id },
-    include: {
-      lines: { include: { supplier: true } },
-      rfqs: { include: { responses: true } },
-    },
+    include: { lines: { include: { supplier: true } }, rfqs: { include: { responses: true } } },
   });
 
   if (!quote) notFound();
 
-  const s = STATUS_MAP[quote.status] ?? STATUS_MAP.draft;
+  const st = STATUS_MAP[quote.status] ?? STATUS_MAP.draft;
   const bom = quote.lines.filter((l) => l.type === "BOM");
   const bos = quote.lines.filter((l) => l.type === "BOS");
-  const totalBOM = bom.reduce((acc, l) => acc + (l.totalCost ?? 0), 0);
-  const totalBOS = bos.reduce((acc, l) => acc + (l.totalCost ?? 0), 0);
+  const totalBOM = bom.reduce((a, l) => a + (l.totalCost ?? 0), 0);
+  const totalBOS = bos.reduce((a, l) => a + (l.totalCost ?? 0), 0);
   const total = totalBOM + totalBOS;
   const linesWithoutPrice = quote.lines.filter((l) => !l.unitCost);
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50">
-      {/* Header */}
-      <div className="bg-white border-b border-slate-200 px-6 py-4">
-        <div className="flex items-center gap-3 mb-3">
-          <Link href="/quotes" className="text-slate-400 hover:text-slate-700 transition-colors">
-            <ArrowLeft className="w-5 h-5" />
-          </Link>
-          <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${s.class}`}>{s.label}</span>
-          {quote.clientName && (
-            <span className="text-sm text-slate-400">Cliente: <span className="text-slate-700 font-medium">{quote.clientName}</span></span>
-          )}
-        </div>
-        <div className="flex items-end justify-between">
-          <h1 className="text-2xl font-black text-slate-900">{quote.title}</h1>
+    <div className="space-y-5">
+      {/* Back + status */}
+      <div className="flex items-center gap-3">
+        <Link href="/quotes" className="w-9 h-9 flex items-center justify-center rounded-xl bg-white/70 backdrop-blur-sm border border-white shadow-sm text-slate-500 hover:text-slate-900 transition-all">
+          <ArrowLeft className="w-4 h-4" />
+        </Link>
+        <span className={`text-xs font-black px-3 py-1.5 rounded-full ${st.color}`}>{st.label}</span>
+        {quote.clientName && <span className="text-sm text-slate-500">Cliente: <span className="font-semibold text-slate-700">{quote.clientName}</span></span>}
+      </div>
+
+      {/* Invoice header */}
+      <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white shadow-sm p-8">
+        <div className="flex items-start justify-between mb-8">
+          <div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Presupuesto</div>
+            <h1 className="text-4xl font-black text-slate-900 uppercase leading-tight">{quote.title}</h1>
+            <div className="text-sm text-slate-400 mt-2">
+              {new Date(quote.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+            </div>
+          </div>
           <div className="text-right">
-            <div className="text-3xl font-black text-slate-900">{total.toFixed(2)} €</div>
-            <div className="text-xs text-slate-400 mt-0.5">Total sin IVA</div>
+            <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total sin IVA</div>
+            <div className="text-5xl font-black text-slate-900 tabular-nums">{total.toFixed(2)}<span className="text-2xl text-slate-400 ml-1">€</span></div>
+            <div className="text-sm text-slate-400 mt-1">Con IVA: <span className="font-semibold text-slate-600">{(total * 1.21).toFixed(2)} €</span></div>
           </div>
         </div>
+
+        {/* Summary cards */}
+        <div className="grid grid-cols-3 gap-4 p-5 rounded-2xl bg-slate-50/80">
+          <SummaryItem label="Líneas de material" value={`${bom.length} ítems`} />
+          <SummaryItem label="Total materiales" value={`${totalBOM.toFixed(2)} €`} />
+          <SummaryItem label="RFQs enviados" value={`${quote.rfqs.length}`} />
+        </div>
+
         {quote.notes && (
-          <p className="text-sm text-slate-500 mt-2 border-t border-slate-100 pt-2">{quote.notes}</p>
+          <div className="mt-5 p-4 rounded-2xl bg-amber-50/60 border border-amber-100">
+            <div className="text-xs font-bold text-amber-700 uppercase tracking-wide mb-1">Notas</div>
+            <p className="text-sm text-slate-600">{quote.notes}</p>
+          </div>
+        )}
+
+        {linesWithoutPrice.length > 0 && (
+          <div className="mt-4 p-3 rounded-xl bg-amber-50 border border-amber-200 text-sm text-amber-700 font-medium">
+            ⚠️ {linesWithoutPrice.length} línea{linesWithoutPrice.length > 1 ? "s" : ""} sin precio — solicita RFQ a proveedores desde el agente
+          </div>
         )}
       </div>
 
-      <div className="px-6 py-6 space-y-6">
+      {/* BOM Table */}
+      {bom.length > 0 && <LineTable title="Materiales (BOM)" lines={bom} subtotal={totalBOM} accent="blue" />}
 
-        {/* Alert: lines without price */}
-        {linesWithoutPrice.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-xl px-4 py-3 text-sm text-amber-700">
-            ⚠️ {linesWithoutPrice.length} línea{linesWithoutPrice.length > 1 ? "s" : ""} sin precio — pide al agente que envíe RFQs a proveedores
+      {/* BOS Table */}
+      {bos.length > 0 && <LineTable title="Servicios (BOS)" lines={bos} subtotal={totalBOS} accent="violet" />}
+
+      {/* Total footer */}
+      <div className="bg-slate-900 rounded-3xl p-7 flex items-center justify-between relative overflow-hidden">
+        <div className="absolute inset-0 opacity-30"
+          style={{ background: "radial-gradient(ellipse at right, #7c3aed, transparent 60%)" }} />
+        <div className="relative space-y-1">
+          {totalBOM > 0 && <div className="text-slate-400 text-sm">Materiales: <span className="text-white font-semibold">{totalBOM.toFixed(2)} €</span></div>}
+          {totalBOS > 0 && <div className="text-slate-400 text-sm">Servicios: <span className="text-white font-semibold">{totalBOS.toFixed(2)} €</span></div>}
+        </div>
+        <div className="relative text-right">
+          <div className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Total sin IVA</div>
+          <div className="text-5xl font-black text-white tabular-nums">{total.toFixed(2)} €</div>
+          <div className="text-slate-400 text-sm mt-1">Con IVA: {(total * 1.21).toFixed(2)} €</div>
+        </div>
+      </div>
+
+      {/* RFQs */}
+      {quote.rfqs.length > 0 && (
+        <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white shadow-sm overflow-hidden">
+          <div className="px-6 py-4 border-b border-slate-100">
+            <h2 className="font-black text-slate-900 uppercase text-sm tracking-wide">RFQs enviados</h2>
           </div>
-        )}
-
-        {/* BOM Table */}
-        {bom.length > 0 && (
-          <Section title="Materiales (BOM)" color="blue" lines={bom} subtotal={totalBOM} />
-        )}
-
-        {/* BOS Table */}
-        {bos.length > 0 && (
-          <Section title="Servicios (BOS)" color="purple" lines={bos} subtotal={totalBOS} />
-        )}
-
-        {/* Total summary */}
-        <div className="bg-slate-900 rounded-2xl p-5 flex items-center justify-between">
-          <div className="space-y-1">
-            {totalBOM > 0 && <div className="text-sm text-slate-400">Materiales: <span className="text-white font-semibold">{totalBOM.toFixed(2)} €</span></div>}
-            {totalBOS > 0 && <div className="text-sm text-slate-400">Servicios: <span className="text-white font-semibold">{totalBOS.toFixed(2)} €</span></div>}
-          </div>
-          <div className="text-right">
-            <div className="text-xs text-slate-400 mb-1">TOTAL SIN IVA</div>
-            <div className="text-4xl font-black text-white">{total.toFixed(2)} €</div>
-            <div className="text-slate-400 text-sm mt-1">+IVA: {(total * 1.21).toFixed(2)} €</div>
+          <div className="divide-y divide-slate-100">
+            {quote.rfqs.map((r) => (
+              <div key={r.id} className="px-6 py-4 flex items-center justify-between">
+                <div>
+                  <div className="font-semibold text-slate-800 text-sm">{r.supplierName ?? r.supplierEmail}</div>
+                  <div className="text-xs text-slate-400">{r.supplierEmail}</div>
+                </div>
+                <span className={`text-xs font-black px-3 py-1 rounded-full ${
+                  r.status === "responded" ? "bg-[#d6ff6b] text-slate-900" :
+                  r.status === "pending"   ? "bg-amber-200 text-amber-900" :
+                  "bg-slate-100 text-slate-500"
+                }`}>
+                  {r.status === "responded" ? `✓ ${r.responses.length} respuesta${r.responses.length > 1 ? "s" : ""}` : r.status.toUpperCase()}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-
-        {/* RFQs */}
-        {quote.rfqs.length > 0 && (
-          <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-            <div className="px-5 py-4 border-b border-slate-100">
-              <h2 className="font-bold text-slate-900">RFQs enviados</h2>
-            </div>
-            <div className="divide-y divide-slate-100">
-              {quote.rfqs.map((r) => (
-                <div key={r.id} className="px-5 py-3 flex items-center justify-between text-sm">
-                  <div>
-                    <div className="font-medium text-slate-800">{r.supplierName ?? r.supplierEmail}</div>
-                    <div className="text-xs text-slate-400">{r.supplierEmail}</div>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                      r.status === "responded" ? "bg-green-100 text-green-700" :
-                      r.status === "pending" ? "bg-amber-100 text-amber-700" :
-                      "bg-slate-100 text-slate-500"
-                    }`}>
-                      {r.status === "responded" ? `✓ ${r.responses.length} respuesta${r.responses.length > 1 ? "s" : ""}` : r.status}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-      </div>
+      )}
     </div>
   );
 }
 
-function Section({ title, color, lines, subtotal }: {
-  title: string;
-  color: "blue" | "purple";
-  lines: any[];
-  subtotal: number;
-}) {
-  const colors = {
-    blue:   { header: "bg-blue-600", badge: "bg-blue-50 text-blue-700", row: "hover:bg-blue-50/30" },
-    purple: { header: "bg-purple-600", badge: "bg-purple-50 text-purple-700", row: "hover:bg-purple-50/30" },
-  }[color];
-
+function SummaryItem({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden">
-      {/* Table header */}
-      <div className={`${colors.header} px-5 py-3 flex items-center justify-between`}>
-        <span className="font-bold text-white text-sm">{title}</span>
-        <span className="text-white/80 text-sm font-semibold">{subtotal.toFixed(2)} €</span>
-      </div>
+    <div>
+      <div className="text-xs font-bold text-slate-400 uppercase tracking-wide mb-1">{label}</div>
+      <div className="text-lg font-black text-slate-900">{value}</div>
+    </div>
+  );
+}
 
+function LineTable({ title, lines, subtotal, accent }: {
+  title: string; lines: any[]; subtotal: number; accent: "blue" | "violet";
+}) {
+  const accentColor = { blue: "text-blue-600", violet: "text-violet-600" }[accent];
+  return (
+    <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white shadow-sm overflow-hidden">
+      <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+        <h2 className={`font-black uppercase text-sm tracking-wide ${accentColor}`}>{title}</h2>
+        <span className="font-black text-slate-900">{subtotal.toFixed(2)} €</span>
+      </div>
       <div className="overflow-x-auto">
-        <table className="w-full text-sm">
+        <table className="w-full">
           <thead>
-            <tr className="border-b border-slate-100 bg-slate-50">
-              <th className="text-left px-5 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Descripción</th>
-              <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Cantidad</th>
-              <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Unidad</th>
-              <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Precio unit.</th>
-              <th className="text-right px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Total</th>
-              <th className="text-left px-4 py-2.5 text-xs font-bold text-slate-500 uppercase tracking-wide">Proveedor</th>
+            <tr className="border-b border-slate-100 bg-slate-50/60">
+              {["Descripción", "Cantidad", "Unidad", "Precio unit.", "Total", "Proveedor"].map((h, i) => (
+                <th key={h} className={`px-5 py-3 text-xs font-bold text-slate-400 uppercase tracking-wide ${i > 0 ? "text-right" : "text-left"} ${i === 5 ? "text-left" : ""}`}>{h}</th>
+              ))}
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100">
+          <tbody className="divide-y divide-slate-100/60">
             {lines.map((l, i) => (
-              <tr key={i} className={`${colors.row} transition-colors`}>
-                <td className="px-5 py-3 font-medium text-slate-800">{l.description}</td>
-                <td className="px-4 py-3 text-right text-slate-700 tabular-nums">{l.quantity}</td>
-                <td className="px-4 py-3 text-slate-500">{l.unit}</td>
-                <td className="px-4 py-3 text-right tabular-nums">
+              <tr key={i} className="hover:bg-violet-50/30 transition-colors duration-100 group">
+                <td className="px-5 py-3.5 font-medium text-slate-800 text-sm">{l.description}</td>
+                <td className="px-5 py-3.5 text-right tabular-nums text-slate-700">{l.quantity}</td>
+                <td className="px-5 py-3.5 text-right text-slate-400 text-sm">{l.unit}</td>
+                <td className="px-5 py-3.5 text-right tabular-nums text-sm">
                   {l.unitCost != null
                     ? <span className="text-slate-800">{l.unitCost.toFixed(2)} €</span>
-                    : <span className="text-amber-500 font-medium">—</span>
-                  }
+                    : <span className="text-amber-400 font-semibold">Sin precio</span>}
                 </td>
-                <td className="px-4 py-3 text-right tabular-nums font-bold">
-                  {l.totalCost != null
-                    ? <span className="text-slate-900">{l.totalCost.toFixed(2)} €</span>
-                    : <span className="text-amber-500">Sin precio</span>
-                  }
+                <td className="px-5 py-3.5 text-right tabular-nums font-black text-slate-900">
+                  {l.totalCost != null ? `${l.totalCost.toFixed(2)} €` : <span className="text-amber-400 font-normal">—</span>}
                 </td>
-                <td className="px-4 py-3 text-slate-400 text-xs">
-                  {l.supplier?.name ?? <span className="italic">—</span>}
-                </td>
+                <td className="px-5 py-3.5 text-slate-400 text-xs">{l.supplier?.name ?? "—"}</td>
               </tr>
             ))}
           </tbody>
           <tfoot>
-            <tr className="border-t-2 border-slate-200 bg-slate-50">
-              <td colSpan={4} className="px-5 py-3 font-bold text-slate-700">Subtotal {title}</td>
-              <td className="px-4 py-3 text-right font-black text-slate-900 tabular-nums">{subtotal.toFixed(2)} €</td>
+            <tr className="border-t-2 border-slate-200 bg-slate-50/80">
+              <td colSpan={4} className="px-5 py-3 font-bold text-slate-600 uppercase text-xs tracking-wide">Subtotal {title}</td>
+              <td className="px-5 py-3 text-right font-black text-slate-900 tabular-nums">{subtotal.toFixed(2)} €</td>
               <td />
             </tr>
           </tfoot>

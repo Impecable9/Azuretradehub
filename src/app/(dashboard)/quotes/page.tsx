@@ -2,16 +2,16 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import { ChevronRight, Plus } from "lucide-react";
 
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
-const STATUS_MAP: Record<string, { label: string; class: string }> = {
-  draft:     { label: "Borrador",    class: "bg-slate-100 text-slate-600" },
-  rfq_sent:  { label: "RFQ enviado", class: "bg-amber-100 text-amber-700" },
-  quoted:    { label: "Cotizado",    class: "bg-blue-100 text-blue-700" },
-  accepted:  { label: "Aceptado",   class: "bg-green-100 text-green-700" },
-  rejected:  { label: "Rechazado",  class: "bg-red-100 text-red-700" },
+const STATUS_MAP: Record<string, { label: string; color: string }> = {
+  draft:    { label: "BORRADOR",    color: "bg-slate-200 text-slate-700" },
+  rfq_sent: { label: "RFQ ENVIADO", color: "bg-amber-300 text-amber-900" },
+  quoted:   { label: "COTIZADO",    color: "bg-blue-200 text-blue-900" },
+  accepted: { label: "ACEPTADO",    color: "bg-[#d6ff6b] text-slate-900" },
+  rejected: { label: "RECHAZADO",   color: "bg-rose-200 text-rose-900" },
 };
 
 export default async function QuotesPage() {
@@ -21,89 +21,89 @@ export default async function QuotesPage() {
     orderBy: { createdAt: "desc" },
   });
 
+  const total = quotes.reduce((a, q) => a + (q.totalCost ?? 0), 0);
+
   return (
-    <div className="flex-1 overflow-y-auto px-6 py-6">
-      <div className="flex items-center justify-between mb-6">
+    <div className="space-y-5">
+      {/* Header */}
+      <div className="flex items-end justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Presupuestos</h1>
-          <p className="text-sm text-slate-500 mt-0.5">{quotes.length} presupuestos generados</p>
+          <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tight">Presupuestos</h1>
+          <p className="text-sm text-slate-400 mt-1">{quotes.length} presupuesto{quotes.length !== 1 ? "s" : ""} · {total.toFixed(2)} € valor total</p>
         </div>
         <Link
           href="/chat"
-          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm px-4 py-2 rounded-xl transition-colors"
+          className="flex items-center gap-2 bg-slate-900 hover:bg-slate-700 text-white text-sm font-bold px-4 py-2.5 rounded-2xl transition-all duration-200 hover:scale-105"
         >
-          + Nuevo presupuesto
+          <Plus className="w-4 h-4" /> Nuevo presupuesto
         </Link>
       </div>
 
       {quotes.length === 0 ? (
-        <div className="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-          <div className="text-4xl mb-3">📋</div>
-          <div className="font-bold text-slate-700 mb-1">Aún no hay presupuestos</div>
-          <p className="text-slate-400 text-sm mb-4">
-            Habla con el agente y genera tu primer presupuesto en segundos.
-          </p>
-          <Link href="/chat" className="text-blue-600 font-semibold text-sm hover:underline">
-            Ir al agente →
+        <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white shadow-sm p-16 text-center">
+          <div className="text-5xl mb-4">📋</div>
+          <div className="font-black text-slate-700 text-lg mb-2">Aún no hay presupuestos</div>
+          <p className="text-slate-400 text-sm mb-6">Habla con el agente y genera tu primer presupuesto en segundos.</p>
+          <Link href="/chat" className="inline-flex items-center gap-2 bg-slate-900 text-white font-bold px-5 py-2.5 rounded-2xl hover:bg-slate-700 transition-all">
+            Ir al agente <ChevronRight className="w-4 h-4" />
           </Link>
         </div>
       ) : (
-        <div className="space-y-3">
-          {quotes.map((q) => {
-            const s = STATUS_MAP[q.status] ?? STATUS_MAP.draft;
-            const responded = q.rfqs.filter((r) => r.status === "responded").length;
-            const pending = q.rfqs.filter((r) => r.status === "pending").length;
-            return (
-              <Link key={q.id} href={`/quotes/${q.id}`} className="block bg-white rounded-2xl border border-slate-200 p-5 hover:border-blue-300 hover:shadow-sm transition-all">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${s.class}`}>
-                        {s.label}
-                      </span>
-                      {q.clientName && (
-                        <span className="text-xs text-slate-400">Cliente: {q.clientName}</span>
-                      )}
-                    </div>
-                    <h3 className="font-bold text-slate-900 truncate">{q.title}</h3>
-                    <div className="flex items-center gap-4 mt-2 text-xs text-slate-400">
-                      <span>{q.lines.length} líneas</span>
-                      {responded > 0 && <span className="text-green-600 font-medium">✓ {responded} cotización{responded > 1 ? "es" : ""} recibida{responded > 1 ? "s" : ""}</span>}
-                      {pending > 0 && <span className="text-amber-600">{pending} RFQ pendiente{pending > 1 ? "s" : ""}</span>}
-                      <span>{new Date(q.createdAt).toLocaleDateString("es-ES")}</span>
-                    </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    {q.totalCost ? (
-                      <div className="text-xl font-black text-slate-900">{q.totalCost.toFixed(2)} €</div>
-                    ) : (
-                      <div className="text-slate-400 text-sm">Sin precio</div>
-                    )}
-                    {q.margin && (
-                      <div className="text-xs text-green-600 font-medium">+{q.margin}% margen</div>
-                    )}
-                  </div>
-                </div>
+        <div className="bg-white/70 backdrop-blur-sm rounded-3xl border border-white shadow-sm overflow-hidden">
+          {/* Table header */}
+          <div className="px-6 py-3.5 border-b border-slate-100 grid grid-cols-12 gap-4 text-xs font-bold text-slate-400 uppercase tracking-widest">
+            <span className="col-span-1">Nº</span>
+            <span className="col-span-4">Presupuesto</span>
+            <span className="col-span-2">Estado</span>
+            <span className="col-span-2">Líneas</span>
+            <span className="col-span-2 text-right">Total</span>
+            <span className="col-span-1" />
+          </div>
 
-                {q.lines.length > 0 && (
-                  <div className="mt-3 pt-3 border-t border-slate-100 flex flex-wrap gap-2">
-                    {q.lines.slice(0, 4).map((l, i) => (
-                      <span key={i} className={`text-xs px-2 py-1 rounded-lg font-medium ${
-                        l.type === "BOM" ? "bg-blue-50 text-blue-700" : "bg-purple-50 text-purple-700"
-                      }`}>
-                        {l.description} × {l.quantity} {l.unit}
-                      </span>
-                    ))}
-                    {q.lines.length > 4 && (
-                      <span className="text-xs px-2 py-1 rounded-lg bg-slate-100 text-slate-500">
-                        +{q.lines.length - 4} más
-                      </span>
-                    )}
+          {/* Rows */}
+          <div className="divide-y divide-slate-100/60">
+            {quotes.map((q, idx) => {
+              const st = STATUS_MAP[q.status] ?? STATUS_MAP.draft;
+              const responded = q.rfqs.filter((r) => r.status === "responded").length;
+              const pending = q.rfqs.filter((r) => r.status === "pending").length;
+              const withPrice = q.lines.filter((l) => l.unitCost).length;
+
+              return (
+                <Link
+                  key={q.id}
+                  href={`/quotes/${q.id}`}
+                  className="px-6 py-4 grid grid-cols-12 gap-4 items-center hover:bg-violet-50/40 transition-colors duration-150 group"
+                >
+                  <div className="col-span-1 text-slate-300 font-black text-sm tabular-nums">
+                    #{String(quotes.length - idx).padStart(3, "0")}
                   </div>
-                )}
-              </Link>
-            );
-          })}
+                  <div className="col-span-4">
+                    <div className="font-bold text-slate-800 text-sm group-hover:text-violet-700 transition-colors leading-tight">{q.title}</div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      {new Date(q.createdAt).toLocaleDateString("es-ES")}
+                      {q.clientName && <span className="ml-2 text-slate-500">{q.clientName}</span>}
+                    </div>
+                  </div>
+                  <div className="col-span-2">
+                    <span className={`text-[10px] font-black px-2.5 py-1 rounded-full ${st.color}`}>{st.label}</span>
+                  </div>
+                  <div className="col-span-2 text-xs text-slate-500">
+                    <div>{q.lines.length} ítems · {withPrice} con precio</div>
+                    {responded > 0 && <div className="text-emerald-600 font-semibold">✓ {responded} cotización{responded > 1 ? "es" : ""}</div>}
+                    {pending > 0 && <div className="text-amber-500">{pending} RFQ pend.</div>}
+                  </div>
+                  <div className="col-span-2 text-right font-black text-slate-900 tabular-nums">
+                    {q.totalCost ? `${q.totalCost.toFixed(2)} €` : <span className="text-slate-300 font-normal text-sm">Sin precio</span>}
+                  </div>
+                  <div className="col-span-1 flex justify-end">
+                    <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-violet-100 flex items-center justify-center transition-colors">
+                      <ChevronRight className="w-3.5 h-3.5 text-slate-400 group-hover:text-violet-500 transition-colors" />
+                    </div>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
         </div>
       )}
     </div>
