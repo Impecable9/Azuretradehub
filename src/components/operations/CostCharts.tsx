@@ -146,29 +146,3 @@ export function PvpVsCostChart() {
   );
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STRATEGY DATA (exported for use in server component)
-// ─────────────────────────────────────────────────────────────────────────────
-export const STRATEGY_TABLE = SIZES.map((size, i) => {
-  const cAlignES   = Math.round(alignES[i]);
-  const cAlignCN   = Math.round(alignCN[i]);
-  const cFreeES    = Math.round(freeES[i]);
-  const pvpAlign   = PVP_ALIGN[i];
-  const pvpFree    = PVP_FREE[i];
-  const marginAlign = Math.round(((pvpAlign - cAlignES) / pvpAlign) * 100);
-  const marginFree  = Math.round(((pvpFree - cFreeES)  / pvpFree)  * 100);
-  const breakEvenCN = Math.round(alignCN[i]);
-
-  return {
-    size,
-    panels: PANELS[i],
-    cAlignES,
-    cAlignCN,
-    cFreeES,
-    pvpAlign,
-    pvpFree,
-    marginAlign,
-    marginFree,
-    switchToCNAt: `${Math.ceil(40 / PANELS[i])} pedidos`, // MOQ 40 frames ÷ panels per order
-  };
-});

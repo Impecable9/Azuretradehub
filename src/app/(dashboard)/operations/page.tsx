@@ -1,5 +1,6 @@
 import { ExternalLink } from "lucide-react";
-import { CostBreakdownChart, PvpVsCostChart, STRATEGY_TABLE } from "@/components/operations/CostCharts";
+import { CostBreakdownChart, PvpVsCostChart } from "@/components/operations/CostCharts";
+import { STRATEGY_TABLE } from "@/components/operations/strategyData";
 
 const SUPPLIERS = [
   {
