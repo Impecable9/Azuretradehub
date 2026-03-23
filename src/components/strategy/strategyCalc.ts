@@ -7,7 +7,7 @@ export const USD_EUR = 0.92;
 
 // ── MAGNET DATA ───────────────────────────────────────────────────────────────
 // Source: Zetar/Wendy WI-25001 (confirmed)
-export const MAGNET_D5x2_USD  = 0.06;   // D5×2mm N52 — panel ALIGN
+export const MAGNET_D5x2_USD  = 0.06;   // D5×2mm N52 — panel ALIGN (surface-mounted)
 export const MAGNET_D5x6_USD  = 0.098;  // D5×6mm N52 — Heartframe alt.
 export const MAGNET_D5x3_EUR  = 0.069;  // D5×3mm — accessories (Zetar confirmed)
 
@@ -17,6 +17,15 @@ export const MAGNETS_PANEL_SIZES = [336, 672, 1008, 2016, 2688, 4032]; // Brilli
 
 // Local alternative price (Spain, unconfirmed estimate)
 export const MAGNET_LOCAL_EUR = 0.22;
+
+// ── TABLERO BASE — nueva construcción (sin perforar) ──────────────────────────
+// MDF 8mm plano (no perforado — más barato que el WI-25001 de Zetar)
+// Chapa magnética 0.5mm bonded con VHB → imanes se auto-alinean magnéticamente
+// Molde posicionador impreso en Bambu (30mm grid, 336 huecos) — coste único ~€5 filamento
+export const MDF_8MM_EUR    = 2.50;  // estimado — necesita cotización real (sin agujeros)
+export const CHAPA_EUR      = 5.50;  // estimado — chapa magnética 780×390mm (confirmar)
+export const EPOXY_PER_PANEL = 0.80; // epoxy rápido por tablero (~336 puntos, pistola)
+export const MOLD_AMORT_EUR  = 0.10; // molde Bambu ~€5, amortizado a 50 usos
 
 // ── MOQ SCENARIOS — D5×2mm ────────────────────────────────────────────────────
 const MOQ_SCENARIOS = [1000, 5000, 10000, 50000, 100000];
@@ -97,7 +106,31 @@ export const LAUNCH_CAPITAL = [
     note: "MOQ 1 rollo = 1000 ud.",
   },
   {
-    item: "VHB 3M + epoxy (stock inicial)",
+    item: "Chapa magnética 780×390mm × 20 ud",
+    supplier: "Local / ferretería industrial",
+    costEUR: Math.round(20 * CHAPA_EUR),
+    covers: "20 tableros base (ALIGN y FREE)",
+    critical: true,
+    note: "Estimado €5.50/ud. Conseguir cotización real. Puede ser chapa galvanizada 0.5mm.",
+  },
+  {
+    item: "MDF 8mm plano — formato 780×390mm × 20 ud",
+    supplier: "Local / Leroy Merlin / online",
+    costEUR: Math.round(20 * MDF_8MM_EUR),
+    covers: "20 tableros",
+    critical: true,
+    note: "Estimado €2.50/ud cortado a medida. Sin agujeros.",
+  },
+  {
+    item: "Molde posicionador Bambu (PLA, 30mm grid × 336 huecos)",
+    supplier: "Producción propia — Bambu Lab",
+    costEUR: 5,
+    covers: "Reutilizable indefinidamente",
+    critical: true,
+    note: "Imprimir en PLA rígido. ~2h impresión, ~€2 filamento. Clave para reproducibilidad.",
+  },
+  {
+    item: "VHB 3M + epoxy rápido (stock inicial)",
     supplier: "Local / Amazon",
     costEUR: 45,
     covers: "~50 tableros",
@@ -137,29 +170,39 @@ const PACKAGING    = [4, 5, 6, 8, 10, 15];
 const PVP_ALIGN    = [299, 499, 699, 1299, 1699, 2499];
 const PVP_FREE     = [199, 299, 449, 899, 1199, 1799];
 
+// ── Nueva construcción: MDF 8mm + chapa + molde Bambu ────────────────────────
+// ALIGN: base común (MDF+chapa+VHB) + 336 imanes por molde + epoxy
+// FREE:  base común (MDF+chapa+VHB) — sin imanes
+// Assembly time revised: no drilling (~50 min/panel vs 68 min antes)
 export const PRODUCT_ECONOMICS = SIZES_SHORT.map((size, i) => {
-  const magnets   = PANELS_COUNT[i] * MAGNETS_PER_PANEL * MAGNET_D5x2_USD * USD_EUR;
-  const mdf       = PANELS_COUNT[i] * 4.33; // Zetar @500 confirmed
-  const vhb       = PANELS_COUNT[i] * 0.64;
-  const nfc       = PANELS_COUNT[i] * 0.11;
-  const assembly  = PANELS_COUNT[i] * 7.50;
-  const cogAlign  = magnets + mdf + vhb + nfc + PERFIL_ES[i] + TELA_EUR[i] + assembly + PACKAGING[i];
+  const basePerPanel = MDF_8MM_EUR + CHAPA_EUR + MOLD_AMORT_EUR; // €8.10/tablero
+  const vhb          = PANELS_COUNT[i] * 0.64;
+  const nfc          = PANELS_COUNT[i] * 0.11;
+  const magnets      = PANELS_COUNT[i] * MAGNETS_PER_PANEL * MAGNET_D5x2_USD * USD_EUR;
+  const epoxy        = PANELS_COUNT[i] * EPOXY_PER_PANEL;
+  // Assembly: 50 min/panel @ €15/h (no drilling — mold method)
+  const assembly     = PANELS_COUNT[i] * (50 / 60) * 15;
+
+  const cogAlign  = PANELS_COUNT[i] * basePerPanel + vhb + nfc + magnets + epoxy
+                  + PERFIL_ES[i] + TELA_EUR[i] + assembly + PACKAGING[i];
   const marginAlign = ((PVP_ALIGN[i] - cogAlign) / PVP_ALIGN[i]) * 100;
 
-  const mdfFree   = PANELS_COUNT[i] * 9.25; // sin imanes, chapa estimada
-  const cogFree   = mdfFree + vhb + nfc + PERFIL_ES[i] + TELA_EUR[i] + assembly + PACKAGING[i];
+  // FREE: misma base, sin imanes ni epoxy
+  const cogFree   = PANELS_COUNT[i] * basePerPanel + vhb + nfc
+                  + PERFIL_ES[i] + TELA_EUR[i] + assembly + PACKAGING[i];
   const marginFree = ((PVP_FREE[i] - cogFree) / PVP_FREE[i]) * 100;
 
   return {
     size,
-    panels: PANELS_COUNT[i],
+    panels:      PANELS_COUNT[i],
     cogAlign:    Math.round(cogAlign),
     pvpAlign:    PVP_ALIGN[i],
     marginAlign: Math.round(marginAlign),
     cogFree:     Math.round(cogFree),
     pvpFree:     PVP_FREE[i],
     marginFree:  Math.round(marginFree),
-    assemblyH:   (PANELS_COUNT[i] * 7.50) / 15, // hours @ €15/h
+    assemblyMin: PANELS_COUNT[i] * 50,          // minutos totales
+    assemblyH:   (PANELS_COUNT[i] * 50) / 60,   // horas
   };
 });
 
@@ -175,7 +218,7 @@ export const MONTHLY_PROJECTIONS = [1, 5, 10, 20, 50, 100].map((orders) => {
   const cog     = mix.reduce((s, m) => s + m.share * orders * PRODUCT_ECONOMICS[m.idx].cogAlign, 0);
   const grossProfit = revenue - cog;
   const grossMarginPct = (grossProfit / revenue) * 100;
-  const assemblyHours  = mix.reduce((s, m) => s + m.share * orders * PRODUCT_ECONOMICS[m.idx].assemblyH, 0);
+  const assemblyHours  = mix.reduce((s, m) => s + m.share * orders * (PRODUCT_ECONOMICS[m.idx].assemblyH), 0);
   const assemblyDays   = assemblyHours / 4; // 4h productive/day
 
   return {
@@ -220,17 +263,24 @@ export const PENDING_DECISIONS = [
     action: "Hacer prueba física con la Bambu antes de comprometer al proveedor",
   },
   {
-    id: "mdf-moq",
-    title: "MDF Zetar — ¿vale la pena MOQ 500 al lanzar?",
-    desc: "500 tableros × $4.70 = $2,350. Si vendes 1-2/mes al principio, ese stock dura 250 meses. Alternativa: MDF local hasta validar demanda.",
+    id: "mdf-local",
+    title: "MDF 8mm plano — cotización real en España",
+    desc: "Con el nuevo método sin perforar, ya no necesitas el MDF de Zetar. Solo MDF 8mm liso cortado a 780×390mm. Leroy Merlin / online puede bastar para el lanzamiento.",
     impact: "alto",
-    action: "Buscar proveedor MDF local en España para primeras 20-50 unidades",
+    action: "Pedir precio MDF 8mm cortado a medida en 3 sitios locales. Objetivo: <€3/ud",
   },
   {
     id: "chapa-supplier",
-    title: "Chapa acero (FREE variant) — sin cotización confirmada",
-    desc: "Solo tenemos estimado ~€5.50/panel. Necesitas cotización real de chapa magnética 0.5-1mm en formato 780×390mm.",
-    impact: "bajo",
-    action: "Buscar proveedor chapa en España o pedir cotización a Zetar/Wendy",
+    title: "Chapa magnética — cotización urgente (ahora crítica para ALIGN y FREE)",
+    desc: "Con el nuevo proceso, la chapa es necesaria en AMBAS variantes. Chapa de acero magnético 0.5–0.8mm, 780×390mm. Solo estimado €5.50/ud — sin cotización real.",
+    impact: "alto",
+    action: "Buscar proveedor chapas/laminados en Málaga o pedir cotización a Zetar. Objetivo: <€6/ud",
+  },
+  {
+    id: "mold-design",
+    title: "Diseñar e imprimir molde posicionador en Bambu",
+    desc: "El molde 30mm grid × 336 huecos D5 es la clave del nuevo proceso. PLA rígido, 780×390mm (o varios segmentos encajables). Tolerancia: ±0.5mm en hueco D5 para que los imanes encajen y salgan limpio.",
+    impact: "alto",
+    action: "Modelar en Fusion 360 / FreeCAD. Hacer prueba de ajuste con imanes reales antes de escalar.",
   },
 ];
