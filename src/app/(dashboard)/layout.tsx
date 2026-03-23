@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3, TrendingUp } from "lucide-react";
+import Image from "next/image";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3, TrendingUp, Truck } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -10,8 +11,9 @@ const navItems = [
   { href: "/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { href: "/quotes",    icon: FileText,         label: "Presupuestos" },
   { href: "/products",  icon: Grid3x3,          label: "Productos" },
-  { href: "/pricing",   icon: TrendingUp,       label: "Precios" },
-  { href: "/suppliers", icon: Users,            label: "Proveedores" },
+  { href: "/pricing",     icon: TrendingUp, label: "Precios" },
+  { href: "/operations",  icon: Truck,      label: "Operaciones" },
+  { href: "/suppliers",   icon: Users,      label: "Proveedores" },
   { href: "/settings",  icon: Settings,         label: "Configuración" },
 ];
 
@@ -34,12 +36,13 @@ export default async function DashboardLayout({ children }: { children: React.Re
       <header className="sticky top-0 z-30 bg-white border-b border-slate-200/60 shadow-sm">
         <div className="max-w-6xl mx-auto px-6 h-14 flex items-center gap-6">
           {/* Logo */}
-          <div className="flex items-center gap-2 shrink-0">
-            <div className="w-7 h-7 bg-slate-900 rounded-lg flex items-center justify-center">
-              <span className="text-white font-black text-xs">AT</span>
+          <Link href="/dashboard" className="flex items-center gap-2.5 shrink-0 group">
+            <Image src="/brand/icon.svg" alt="Azuretradehub" width={28} height={28} className="rounded-lg" />
+            <div className="leading-tight">
+              <div className="text-[10px] font-bold text-slate-400 tracking-[0.15em] uppercase">Azure</div>
+              <div className="text-[13px] font-black text-slate-900 tracking-tight leading-none">TRADEHUB</div>
             </div>
-            <span className="font-black text-slate-900 tracking-tight text-sm">AZURE<span className="text-slate-900">TRADE</span>HUB</span>
-          </div>
+          </Link>
 
           {/* Nav icons — center */}
           <nav className="flex items-center gap-1 flex-1 justify-center">
@@ -47,9 +50,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
               <Link
                 key={item.href}
                 href={item.href}
-                className="w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150"
+                className="relative group w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150"
               >
                 <item.icon className="w-4 h-4" strokeWidth={1.75} />
+                <span className="pointer-events-none absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-lg">
+                  {item.label}
+                </span>
               </Link>
             ))}
           </nav>

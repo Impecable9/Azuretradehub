@@ -8,6 +8,8 @@ const SIZES = [
   {
     name: "Brilliant",
     dims: "442 × 832 mm",
+    wMM: 442, hMM: 832,
+    cols: 1, rows: 1,
     panels: 1,
     desc: "El más pequeño de la colección. Ideal para espacios reducidos, rincones especiales o como primer paso.",
     ideal: "Recibidores, habitaciones, despachos",
@@ -15,6 +17,8 @@ const SIZES = [
   {
     name: "Joy",
     dims: "832 × 832 mm",
+    wMM: 832, hMM: 832,
+    cols: 2, rows: 1,
     panels: 2,
     desc: "Compacto pero impactante. Convierte una esquina olvidada en un punto de expresión visual.",
     ideal: "Cafeterías, recibidores, zonas de paso",
@@ -22,6 +26,8 @@ const SIZES = [
   {
     name: "Abundant",
     dims: "1222 × 832 mm",
+    wMM: 1222, hMM: 832,
+    cols: 3, rows: 1,
     panels: 3,
     desc: "Equilibra funcionalidad y diseño visual. Proporción perfecta para storytelling sin dominar la pared.",
     ideal: "Salones, oficinas, escaparates",
@@ -29,13 +35,17 @@ const SIZES = [
   {
     name: "Nova",
     dims: "1222 × 1612 mm",
+    wMM: 1222, hMM: 1612,
+    cols: 3, rows: 2,
     panels: 6,
-    desc: "Versátil y envolvente. Formato vertical que se convierte en centro de atención en zonas amplias.",
+    desc: "Versátil y envolvente. Composición cuadrada que se convierte en centro de atención en zonas amplias.",
     ideal: "Cafeterías, coworkings, galerías",
   },
   {
     name: "Luna",
     dims: "1612 × 2002 mm",
+    wMM: 1612, hMM: 2002,
+    cols: 4, rows: 2,
     panels: 8,
     desc: "Experiencia visual inmersiva. Composiciones emocionales, narrativas o producto en exposición.",
     ideal: "Hoteles boutique, showrooms, áreas VIP",
@@ -43,11 +53,62 @@ const SIZES = [
   {
     name: "Gea",
     dims: "2002 × 2392 mm",
+    wMM: 2002, hMM: 2392,
+    cols: 4, rows: 3,
     panels: 12,
     desc: "Mural con alma. Instalación escenográfica donde cada cuadro es una historia conectada.",
     ideal: "Vestíbulos hotel, tiendas flagship, exposiciones",
   },
 ];
+
+function PanelGrid({ wMM, hMM, cols, rows }: { wMM: number; hMM: number; cols: number; rows: number }) {
+  const BOX_W = 160;
+  const BOX_H = 110;
+  const aspect = wMM / hMM;
+  let dispW: number, dispH: number;
+  if (aspect > BOX_W / BOX_H) {
+    dispW = BOX_W;
+    dispH = BOX_W / aspect;
+  } else {
+    dispH = BOX_H;
+    dispW = BOX_H * aspect;
+  }
+  const ox = (BOX_W - dispW) / 2;
+  const oy = (BOX_H - dispH) / 2;
+  const cellW = dispW / cols;
+  const cellH = dispH / rows;
+  // Person silhouette: 1.80m at same scale
+  const pxPerMM = dispH / hMM;
+  const personH = Math.min(1800 * pxPerMM, BOX_H * 0.95);
+  const personW = personH * 0.15;
+  const personX = ox + dispW + 6;
+  const personY = oy + dispH - personH;
+
+  return (
+    <svg viewBox={`0 0 ${BOX_W + (personX + personW + 4 < BOX_W + 30 ? 30 : personW + 14)} ${BOX_H}`} className="w-full h-full">
+      {/* Wall panel grid */}
+      <rect x={ox} y={oy} width={dispW} height={dispH} fill="#1e293b" rx={3} />
+      {Array.from({ length: cols - 1 }).map((_, i) => (
+        <line key={`v${i}`} x1={ox + (i + 1) * cellW} y1={oy} x2={ox + (i + 1) * cellW} y2={oy + dispH} stroke="#334155" strokeWidth={1} />
+      ))}
+      {Array.from({ length: rows - 1 }).map((_, i) => (
+        <line key={`h${i}`} x1={ox} y1={oy + (i + 1) * cellH} x2={ox + dispW} y2={oy + (i + 1) * cellH} stroke="#334155" strokeWidth={1} />
+      ))}
+      <rect x={ox} y={oy} width={dispW} height={dispH} fill="none" stroke="#475569" strokeWidth={1} rx={3} />
+      {/* Dimension labels */}
+      <text x={ox + dispW / 2} y={oy + dispH + 10} textAnchor="middle" fontSize={7} fill="#64748b">{(wMM / 1000).toFixed(2)}m</text>
+      <text x={ox - 5} y={oy + dispH / 2} textAnchor="end" fontSize={7} fill="#64748b" dominantBaseline="middle">{(hMM / 1000).toFixed(2)}m</text>
+      {/* Person silhouette */}
+      {personX + personW + 4 <= BOX_W + 30 && (
+        <>
+          <rect x={personX} y={personY} width={personW} height={personH} fill="#94a3b8" rx={2} opacity={0.5} />
+          <circle cx={personX + personW / 2} cy={personY - personW * 0.6} r={personW * 0.55} fill="#94a3b8" opacity={0.5} />
+          <text x={personX + personW / 2} y={personY + personH + 9} textAnchor="middle" fontSize={6} fill="#64748b">1.80m</text>
+        </>
+      )}
+    </svg>
+  );
+}
 
 const FABRICS = [
   { name: "Atenas",    style: "Mármol azul grisáceo",  img: "/products/fabrics/atenas.jpg" },
@@ -65,43 +126,84 @@ const ACCESSORIES = [
   {
     name: "Marco Roble Fino",
     category: "Marcos",
-    desc: "Madera de roble fino con paspartú blanco",
+    desc: "Madera de roble fino · cristal acrílico estándar. Upgrade disponible: vidrio museo antirreflectante UltraVue UV70 (cristal real, 99% AR, 70% UV).",
     sizes: ["15×15 cm", "20×20 cm"],
+    price: "19.95 €",
     img: "/products/accessories/marco-roble.jpg",
   },
   {
     name: "Marco BGA Classic",
     category: "Marcos",
-    desc: "Madera de roble Classic con paspartú blanco",
+    desc: "Madera de roble Classic · cristal acrílico estándar. Upgrade disponible: vidrio museo antirreflectante UltraVue UV70.",
     sizes: ["20×20 cm"],
+    price: "12.95 €",
+    img: "/products/accessories/marco-bga.jpg",
+  },
+  {
+    name: "Vidrio Museo UltraVue UV70",
+    category: "Marcos",
+    desc: "Cristal real antirreflectante 99% · protección UV 70%. Sustitución del acrílico estándar para instalaciones premium. Se monta en cualquier marco BGA.",
+    sizes: ["20×20 cm"],
+    price: "64.95 €",
     img: "/products/accessories/marco-bga.jpg",
   },
   {
     name: "The Craw",
     category: "Estanterías",
-    desc: "Sostiene bloc A4 y elementos decorativos ligeros. Ideal para listas, calendarios o relojes.",
+    desc: "Sostiene bloc A4 y elementos decorativos ligeros. Ideal para listas, calendarios o relojes. Cuerpo: cerámica (artesanal) o metal magnético (industrial). Trasera acrílica con 21 imanes D5×3mm en dos orientaciones: H horizontal, V vertical.",
     capacity: "hasta 0.6 kg",
-    img: "/products/accessories/the-craw.jpg",
+    magnets: "21 imanes D5×3mm",
+    variants: ["Artesanal · cerámica/PLA", "Industrial · metal"],
+    img: "/products/accessories/the-pins-product.jpg",
   },
   {
     name: "The Wing",
     category: "Estanterías",
-    desc: "Perfecto para libros, relojes y plantas. Diseño funcional y decorativo.",
+    desc: "Perfecto para libros, relojes y plantas. Diseño funcional y decorativo. Cuerpo: cerámica (artesanal) o metal magnético (industrial). 45 imanes D5×3mm a 3cm de separación en trasera acrílica.",
     capacity: "hasta 3 kg",
-    img: "/products/accessories/the-wing.jpg",
+    magnets: "45 imanes D5×3mm",
+    variants: ["Artesanal · cerámica/PLA", "Industrial · metal (MOQ 50)"],
+    img: "/products/accessories/wings-detail.jpg",
   },
   {
     name: "The Nest",
     category: "Estanterías",
-    desc: "Para objetos ligeros como lapiceros o suculentas.",
+    desc: "Para objetos ligeros como lapiceros o suculentas. Cuerpo: cerámica (artesanal) o metal magnético (industrial). 21 imanes D5×3mm a 3cm de separación en trasera acrílica.",
     capacity: "hasta 1.4 kg",
-    img: "/products/accessories/the-nest-shelf.jpg",
+    magnets: "21 imanes D5×3mm",
+    variants: ["Artesanal · cerámica/PLA", "Industrial · metal (MOQ 50)"],
+    img: "/products/accessories/the-pins.jpg",
   },
   {
     name: "The Pins",
     category: "Organización",
-    desc: "Para guardar documentos y recuerdos. Combina organización y estilo.",
-    img: "/products/accessories/the-pins.jpg",
+    desc: "Para guardar documentos y recuerdos. Un solo punto de sujeción magnética. Cuerpo: cerámica (artesanal) o metal magnético (industrial). 1 imán D5×3mm central.",
+    magnets: "1 imán D5×3mm",
+    variants: ["Artesanal · cerámica/PLA", "Industrial · metal (MOQ 50)"],
+    img: "/products/accessories/the-craw.jpg",
+  },
+  {
+    name: "Heartframe",
+    category: "Marcos",
+    desc: "Soporte trasero que convierte cualquier marco en accesorio magnético para Phoenix Wall ALIGN. Impreso en PLA (Bambu) o vaciado en cerámica. 9 imanes D5×3mm a 3cm de separación. Se fija con cinta de doble cara a la parte trasera del marco.",
+    magnets: "9 imanes D5×3mm",
+    variants: ["PLA · impresión 3D", "Cerámica · molde vaciado", "MDF · corte CNC"],
+    badge: "Nuevo",
+    img: "/products/accessories/marco-bga.jpg",
+  },
+  {
+    name: "NFC Chip NTAG213",
+    category: "Conectividad",
+    desc: "Chip NFC NXP NTAG213 de 144 bytes integrado en cada panel. Antena 76×45mm. Tap con el móvil para acceder al contenido digital vinculado: catálogo, historia, portfolio o experiencia interactiva. Certificado CE + RoHS. Hasta 100.000 ciclos de escritura.",
+    img: "/products/accessories/nfc-chip.jpg",
+  },
+  {
+    name: "Kit ALIGN Upgrade",
+    category: "Upgrade",
+    desc: "Convierte cualquier tablero FREE en ALIGN. Estera de resina enrollable con 336 imanes N52 D5×2mm ya empotrados en cuadrícula precisa. Se encaja en el rebaje prefabricado del MDF — sin herramientas, 10-15 min/panel. Tableros FREE se fabrican ALIGN-Ready (rebaje de 3mm). Próximamente disponible.",
+    sizes: ["432×822 mm/panel"],
+    img: "/products/accessories/acc-detail.png",
+    badge: "Próximamente",
   },
 ];
 
@@ -149,22 +251,9 @@ export default function ProductsPage() {
         <div className="grid grid-cols-3 gap-4">
           {SIZES.map((s) => (
             <div key={s.name} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-all duration-200 group">
-              {/* Panel visualizer */}
-              <div className="flex gap-1 mb-5 h-16 items-end">
-                {Array.from({ length: Math.min(s.panels, 4) }).map((_, i) => (
-                  <div
-                    key={i}
-                    className="flex-1 rounded-lg bg-slate-800 group-hover:bg-slate-700 transition-colors duration-200"
-                    style={{ height: `${60 + (i % 2 === 0 ? 0 : -10)}%` }}
-                  />
-                ))}
-                {s.panels > 4 && (
-                  <div className="flex gap-1 flex-1">
-                    {Array.from({ length: s.panels - 4 }).map((_, i) => (
-                      <div key={i} className="flex-1 rounded-md bg-slate-600 h-8" />
-                    ))}
-                  </div>
-                )}
+              {/* Proportional panel grid */}
+              <div className="mb-5 h-28 flex items-center justify-center">
+                <PanelGrid wMM={s.wMM} hMM={s.hMM} cols={s.cols} rows={s.rows} />
               </div>
 
               <div className="flex items-start justify-between gap-2 mb-2">
@@ -218,7 +307,7 @@ export default function ProductsPage() {
       {/* Tab: Accesorios */}
       {tab === 2 && (
         <div className="space-y-5">
-          {["Marcos", "Estanterías", "Organización"].map((cat) => {
+          {["Marcos", "Estanterías", "Organización", "Conectividad"].map((cat) => {
             const items = ACCESSORIES.filter((a) => a.category === cat);
             if (!items.length) return null;
             return (
@@ -237,16 +326,34 @@ export default function ProductsPage() {
                         />
                       </div>
                       <div className="p-4">
-                        <h3 className="font-black text-slate-900 uppercase">{a.name}</h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-black text-slate-900 uppercase">{a.name}</h3>
+                          {"badge" in a && a.badge && (
+                            <span className="text-[9px] font-black bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full uppercase tracking-wider">{a.badge}</span>
+                          )}
+                        </div>
                         <p className="text-xs text-slate-500 mt-1 leading-relaxed">{a.desc}</p>
-                        <div className="flex flex-wrap gap-1.5 mt-3">
+                        <div className="flex flex-wrap gap-1.5 mt-3 items-center">
                           {"sizes" in a && a.sizes && a.sizes.map((sz: string) => (
                             <span key={sz} className="text-[10px] font-bold bg-slate-100 text-slate-600 px-2 py-0.5 rounded-full">{sz}</span>
                           ))}
                           {"capacity" in a && a.capacity && (
                             <span className="text-[10px] font-bold bg-green-50 text-green-700 px-2 py-0.5 rounded-full">{a.capacity}</span>
                           )}
+                          {"magnets" in a && a.magnets && (
+                            <span className="text-[10px] font-bold bg-violet-50 text-violet-700 px-2 py-0.5 rounded-full">🧲 {a.magnets}</span>
+                          )}
+                          {"price" in a && a.price && (
+                            <span className="text-[10px] font-black bg-slate-900 text-white px-2 py-0.5 rounded-full ml-auto">{a.price}</span>
+                          )}
                         </div>
+                        {"variants" in a && a.variants && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {a.variants.map((v: string) => (
+                              <span key={v} className="text-[9px] font-bold bg-amber-50 text-amber-700 border border-amber-100 px-1.5 py-0.5 rounded-md">{v}</span>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useMemo } from "react";
-import { TrendingUp, Package, Zap, Info } from "lucide-react";
+import { useState, useMemo, useRef } from "react";
+import { TrendingUp, Package, Zap, Info, ChevronRight, X } from "lucide-react";
 
 type Size = {
   name: string;
@@ -29,6 +29,18 @@ type Props = {
   unitCosts: UnitCosts;
   imanesPerPanel: number;
   epoxyKgPerM2: number;
+};
+
+// Market reference prices (EUR) — wall-mounted, non-backlit, slim (<3cm) SEG frame systems only.
+// Backlit/lightbox systems excluded: they require 5–10cm depth (incompatible format).
+// Sources: SquareSigns (US), Modnetix stretch fabric wall (US), WhiteWall magnetic frame (EU)
+const MARKET_REF: Record<string, { low: number; high: number; note: string }> = {
+  Brilliant: { low: 100,  high: 185,  note: "SquareSigns SEG 24\"×36\" (~$111–200) · marco magnético WhiteWall" },
+  Joy:       { low: 150,  high: 280,  note: "SquareSigns SEG 36\"×36\" (~$200) · 2 marcos WhiteWall" },
+  Abundant:  { low: 230,  high: 370,  note: "SEG marco pared 48\"×36\" sin luz · estimación mercado" },
+  Nova:      { low: 400,  high: 650,  note: "SEG multi-panel pared sin luz · sin NFC ni magnética" },
+  Luna:      { low: 550,  high: 900,  note: "Sistemas SEG pared grandes formato sin retroiluminación" },
+  Gea:       { low: 800,  high: 1400, note: "SEG mural pared sin luz · sin modularidad magnética" },
 };
 
 // Psychological pricing: snap to nearest "charm" price
@@ -96,19 +108,51 @@ const PACKS = [
   },
 ];
 
+// ============================================================
+// REAL COSTS FROM SUPPLIER QUOTES (updated 2026-03)
+// ============================================================
+// Magnets: Zetar/Wendy quote 2025-11-18
+//   D5×2mm N52 (ALIGN panel): $0.060/ud = €0.055
+//   D5×6mm N52 (Heartframe): $0.098/ud = €0.090
+//   D5×3mm N52 (accessories, estimated between): ~$0.075/ud = €0.069
+// Metal parts: Terrence Ningbo 2025-11-04 @ 50 pcs CIF Malaga (includes shipping)
+//   The Wing (45 mag): $2.80 = €2.58
+//   The Nest (21 mag): $4.14 = €3.81
+//   The Craw L21H (21 mag): $1.07 = €0.99
+//   Heartframe L9 (9 mag): $0.84 = €0.77
+//   The Pins Hook (1 mag): $1.15 = €1.06
+// Acrylic backs: Yitianfeng @ 50 pcs EXW China
+//   Wing back: $1.86 = €1.71
+//   Nest back: $0.64 = €0.59
+//   Heartframe back: $0.50 = €0.46
+// Magnets per accessory at €0.069/ud:
+//   Wing: 45×0.069 = €3.11
+//   Nest/Craw: 21×0.069 = €1.45
+//   Heartframe: 9×0.069 = €0.62
+//   Pins: 1×0.069 = €0.07
+// TOTAL assembled (industrial, incl. shipping):
+const IMAN_D5x3_EUR = 0.069;
+
 const ACCESSORY_COSTS: Record<string, number> = {
-  "Pins": 4.5,
-  "The Craw": 12,
-  "The Wing": 18,
-  "The Nest": 14,
-  "Marco Roble Fino": 22,
-  "Marco BGA Classic": 28,
+  // Industrial metal variant (Terrence CIF Malaga @ 50pcs + acrylic back + magnets)
+  "The Wing":       2.58 + 1.71 + 45 * IMAN_D5x3_EUR,  // €7.41 — steel front + acrylic back + 45 imanes D5×3mm
+  "The Nest":       3.81 + 0.59 + 21 * IMAN_D5x3_EUR,  // €5.85 — steel front + acrylic back + 21 imanes D5×3mm
+  "The Craw":       0.99 + 0.59 + 21 * IMAN_D5x3_EUR,  // €3.03 — L bracket 21H + acrylic back + 21 imanes D5×3mm
+  "Pins":           1.06 + 0.30 +  1 * IMAN_D5x3_EUR,  // €1.43 — hook + tiny acrylic + 1 imán D5×3mm
+  "Heartframe":     0.77 + 0.46 +  9 * IMAN_D5x3_EUR,  // €1.85 — L9 steel + acrylic back + 9 imanes D5×3mm
+  // Sourced externally (bgastore.es)
+  "Marco Roble Fino":  19.95,
+  "Marco BGA Classic": 12.95,
+  "Vidrio Museo UV70": 64.95,
 };
 
 export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }: Props) {
   const [variant, setVariant] = useState<"FREE" | "ALIGN">("ALIGN");
   const [margin, setMargin] = useState(60); // 60% default margin
   const [showPsych, setShowPsych] = useState(true);
+  const [selectedPack, setSelectedPack] = useState<string | null>(null);
+  const [selectedSize, setSelectedSize] = useState<string | null>(null);
+  const breakdownRef = useRef<HTMLDivElement>(null);
 
   // Local editable costs (start from DB values)
   const [costs, setCosts] = useState<UnitCosts>({ ...unitCosts });
@@ -263,14 +307,20 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
                 <th className="px-5 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Tamaño</th>
                 <th className="px-5 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Coste fab.</th>
                 <th className="px-5 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">PVP sugerido</th>
+                <th className="px-5 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Mercado ref.</th>
                 <th className="px-5 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Beneficio</th>
                 <th className="px-5 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Margen real</th>
                 <th className="px-5 py-3 text-center text-[10px] font-black text-slate-400 uppercase tracking-widest">Atractivo</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {sizeData.map(({ size, total, pvp, profit, realMargin }) => (
-                <tr key={size.name} className="hover:bg-slate-50/60 transition-colors">
+              {sizeData.map(({ size, total, pvp, profit, realMargin }) => {
+                const ref = MARKET_REF[size.name];
+                const vsMarket = pvp != null && ref
+                  ? pvp <= ref.low ? "below" : pvp <= ref.high ? "within" : "above"
+                  : null;
+                return (
+                <tr key={size.name} onClick={() => setSelectedSize(selectedSize === size.name ? null : size.name)} className={`hover:bg-slate-50/60 transition-colors cursor-pointer ${selectedSize === size.name ? "bg-violet-50" : ""}`}>
                   <td className="px-5 py-4">
                     <div className="font-black text-slate-900 uppercase">{size.name}</div>
                     <div className="text-xs text-slate-400 font-mono">{size.dims} · {size.panels}p</div>
@@ -284,6 +334,24 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
                     {pvp != null
                       ? <span className="text-2xl font-black text-slate-900 tabular-nums">{pvp} €</span>
                       : <span className="text-slate-300">—</span>}
+                  </td>
+                  <td className="px-5 py-4 text-right">
+                    {ref ? (
+                      <div className="text-right">
+                        <div className="text-xs text-slate-500 tabular-nums">{ref.low.toLocaleString("es-ES")}–{ref.high.toLocaleString("es-ES")} €</div>
+                        {vsMarket && (
+                          <div className={`text-[10px] font-bold mt-0.5 ${
+                            vsMarket === "below" ? "text-green-600" :
+                            vsMarket === "within" ? "text-blue-500" :
+                            "text-orange-500"
+                          }`}>
+                            {vsMarket === "below" ? "▼ bajo mercado" :
+                             vsMarket === "within" ? "✓ en rango" :
+                             "▲ premium"}
+                          </div>
+                        )}
+                      </div>
+                    ) : <span className="text-slate-300">—</span>}
                   </td>
                   <td className="px-5 py-4 text-right">
                     {profit != null
@@ -309,7 +377,8 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
                     </span>
                   </td>
                 </tr>
-              ))}
+                );
+              })}
             </tbody>
           </table>
         </div>
@@ -322,6 +391,87 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
         )}
       </div>
 
+      {selectedSize && (() => {
+        const entry = sizeData.find(d => d.size.name === selectedSize)!;
+        const { breakdown } = computeCost(entry.size, variant);
+        const total = entry.total;
+        const pvp = entry.pvp;
+        const profit = entry.profit;
+        const realMargin = entry.realMargin;
+        return (
+          <div className="bg-white rounded-3xl border border-violet-200 shadow-md overflow-hidden">
+            <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between">
+              <div>
+                <h3 className="font-black text-slate-900 uppercase">
+                  {entry.size.name} · Descompuesto BOM
+                </h3>
+                <div className="text-xs text-slate-500 mt-0.5">
+                  Phoenix Wall {variant} · {entry.size.dims} · {entry.size.panels} panel{entry.size.panels > 1 ? 'es' : ''}
+                </div>
+              </div>
+              <button
+                onClick={() => setSelectedSize(null)}
+                className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-100">
+                    <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Componente</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Coste</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">% del total</th>
+                    <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">PVP parcial</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {Object.entries(breakdown).map(([name, cost]) => (
+                    <tr key={name} className="hover:bg-slate-50/60">
+                      <td className="px-6 py-3 font-medium text-slate-800 text-sm">{name}</td>
+                      <td className="px-6 py-3 text-right tabular-nums text-slate-700 text-sm">
+                        {cost != null ? `${cost.toFixed(2)} €` : <span className="text-amber-400 text-xs font-semibold">Sin datos</span>}
+                      </td>
+                      <td className="px-6 py-3 text-right tabular-nums text-slate-400 text-sm">
+                        {cost != null && total != null && total > 0
+                          ? `${((cost / total) * 100).toFixed(1)}%`
+                          : '—'}
+                      </td>
+                      <td className="px-6 py-3 text-right tabular-nums text-slate-400 text-sm">
+                        {cost != null ? `${(cost * (1 + margin / 100)).toFixed(2)} €` : '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+                <tfoot>
+                  <tr className="border-t-2 border-slate-200 bg-slate-50">
+                    <td className="px-6 py-3 font-black text-slate-500 text-xs uppercase tracking-wide">Coste total</td>
+                    <td className="px-6 py-3 text-right font-black text-slate-900 tabular-nums">
+                      {total != null ? `${total.toFixed(2)} €` : '—'}
+                    </td>
+                    <td className="px-6 py-3 text-right text-slate-400 text-xs">100%</td>
+                    <td />
+                  </tr>
+                  <tr className="bg-slate-900">
+                    <td className="px-6 py-4 font-black text-slate-300 text-xs uppercase tracking-wide">
+                      PVP sugerido · margen {margin}%
+                    </td>
+                    <td colSpan={2} className="px-6 py-4 text-right">
+                      {profit != null && <div className="text-xs font-bold text-green-400">+{profit.toFixed(0)} € beneficio</div>}
+                      {realMargin != null && <div className="text-[10px] text-slate-400">{realMargin.toFixed(0)}% margen real</div>}
+                    </td>
+                    <td className="px-6 py-4 text-right font-black text-white tabular-nums text-2xl">
+                      {pvp != null ? `${pvp} €` : '—'}
+                    </td>
+                  </tr>
+                </tfoot>
+              </table>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* Packs */}
       <div>
         <div className="mb-4 flex items-center gap-3">
@@ -331,21 +481,28 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
         <div className="grid grid-cols-3 gap-4">
           {PACKS.map((pack) => {
             const sizeEntry = sizeData.find((d) => pack.sizes.includes(d.size.name));
-            const fabricCost = 0; // custom tela = extra, not included here
             const accCost = pack.accessories.reduce((a, acc) => a + (ACCESSORY_COSTS[acc] ?? 0), 0);
-            const baseCost = (sizeEntry?.total ?? 0) + accCost + fabricCost;
+            const baseCost = (sizeEntry?.total ?? 0) + accCost;
             const basePvp = sizeEntry?.pvp;
-
-            // Pack PVP = size PVP + accessories + tela markup (simplified)
             const accPvp = accCost * (1 + margin / 100);
             const packPvp = basePvp != null
-              ? (showPsych ? charmPrice(baseCost + accCost, margin) : Math.round((basePvp + accPvp) / 10) * 10 - 1)
+              ? (showPsych ? charmPrice(baseCost, margin) : Math.round((basePvp + accPvp) / 10) * 10 - 1)
               : null;
-
             const packProfit = packPvp != null && baseCost > 0 ? packPvp - baseCost : null;
+            const isSelected = selectedPack === pack.name;
 
             return (
-              <div key={pack.name} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-6 hover:shadow-md transition-all duration-200">
+              <button
+                key={pack.name}
+                onClick={() => {
+                  const next = isSelected ? null : pack.name;
+                  setSelectedPack(next);
+                  if (next) setTimeout(() => breakdownRef.current?.scrollIntoView({ behavior: "smooth", block: "start" }), 50);
+                }}
+                className={`text-left bg-white rounded-3xl border shadow-sm p-6 hover:shadow-md transition-all duration-200 group w-full ${
+                  isSelected ? "border-violet-400 ring-2 ring-violet-200" : "border-slate-100"
+                }`}
+              >
                 <div className="flex items-start justify-between mb-3">
                   <div>
                     <div className="text-2xl mb-1">{pack.icon}</div>
@@ -356,14 +513,17 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
                       </span>
                     )}
                   </div>
-                  {packPvp != null && (
-                    <div className="text-right">
-                      <div className="text-2xl font-black text-slate-900 tabular-nums">{packPvp} €</div>
-                      {packProfit != null && (
-                        <div className="text-xs font-bold text-green-600">+{packProfit.toFixed(0)} € beneficio</div>
-                      )}
-                    </div>
-                  )}
+                  <div className="flex flex-col items-end gap-2">
+                    {packPvp != null && (
+                      <div className="text-right">
+                        <div className="text-2xl font-black text-slate-900 tabular-nums">{packPvp} €</div>
+                        {packProfit != null && (
+                          <div className="text-xs font-bold text-green-600">+{packProfit.toFixed(0)} € beneficio</div>
+                        )}
+                      </div>
+                    )}
+                    <ChevronRight className={`w-4 h-4 transition-all ${isSelected ? "rotate-90 text-violet-500" : "text-slate-300 group-hover:text-slate-500"}`} />
+                  </div>
                 </div>
 
                 <p className="text-xs text-slate-500 mb-4 leading-relaxed">{pack.desc}</p>
@@ -382,19 +542,189 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
                     </div>
                   ))}
                 </div>
-              </div>
+              </button>
             );
           })}
         </div>
+
+        {/* Pack breakdown panel */}
+        {selectedPack && (() => {
+          const pack = PACKS.find((p) => p.name === selectedPack)!;
+          const sizeEntry = sizeData.find((d) => pack.sizes.includes(d.size.name))!;
+          const accCost = pack.accessories.reduce((a, acc) => a + (ACCESSORY_COSTS[acc] ?? 0), 0);
+          const baseCost = (sizeEntry?.total ?? 0) + accCost;
+          const packPvp = sizeEntry?.pvp != null
+            ? (showPsych ? charmPrice(baseCost, margin) : Math.round(baseCost * (1 + margin / 100) / 10) * 10 - 1)
+            : null;
+          const packProfit = packPvp != null && baseCost > 0 ? packPvp - baseCost : null;
+          const packMargin = packPvp != null && baseCost > 0 ? ((packPvp - baseCost) / packPvp) * 100 : null;
+          const breakdown = sizeEntry ? computeCost(sizeEntry.size, variant).breakdown : {};
+
+          return (
+            <div ref={breakdownRef} className="mt-4 bg-white rounded-3xl border border-violet-200 shadow-md overflow-hidden">
+              {/* Header */}
+              <div className="px-6 py-4 bg-violet-50 border-b border-violet-100 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">{pack.icon}</span>
+                  <div>
+                    <h3 className="font-black text-slate-900 uppercase">Pack {pack.name} · Descompuesto</h3>
+                    <div className="text-xs text-slate-500 mt-0.5">Phoenix Wall {variant} · {pack.sizes[0]} · {sizeEntry?.size.dims}</div>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedPack(null)} className="w-8 h-8 rounded-xl bg-white border border-slate-200 flex items-center justify-center text-slate-400 hover:text-slate-700 transition-colors">
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100">
+                      <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Componente</th>
+                      <th className="px-6 py-3 text-left text-[10px] font-black text-slate-400 uppercase tracking-widest">Categoría</th>
+                      <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">Coste</th>
+                      <th className="px-6 py-3 text-right text-[10px] font-black text-slate-400 uppercase tracking-widest">PVP parcial</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {/* BOM lines */}
+                    {Object.entries(breakdown).map(([name, cost]) => (
+                      <tr key={name} className="hover:bg-slate-50/60">
+                        <td className="px-6 py-3 font-medium text-slate-800 text-sm">{name}</td>
+                        <td className="px-6 py-3">
+                          <span className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">Tablero</span>
+                        </td>
+                        <td className="px-6 py-3 text-right tabular-nums text-slate-700 text-sm">
+                          {cost != null ? `${cost.toFixed(2)} €` : <span className="text-amber-400 text-xs">Sin datos</span>}
+                        </td>
+                        <td className="px-6 py-3 text-right tabular-nums text-slate-400 text-sm">
+                          {cost != null ? `${(cost * (1 + margin / 100)).toFixed(2)} €` : "—"}
+                        </td>
+                      </tr>
+                    ))}
+                    {/* Accessories */}
+                    {pack.accessories.map((acc) => {
+                      const c = ACCESSORY_COSTS[acc] ?? null;
+                      return (
+                        <tr key={acc} className="hover:bg-slate-50/60">
+                          <td className="px-6 py-3 font-medium text-slate-800 text-sm">{acc}</td>
+                          <td className="px-6 py-3">
+                            <span className="text-[10px] font-bold bg-blue-50 text-blue-700 px-2 py-0.5 rounded-full">Accesorio</span>
+                          </td>
+                          <td className="px-6 py-3 text-right tabular-nums text-slate-700 text-sm">
+                            {c != null ? `${c.toFixed(2)} €` : <span className="text-amber-400 text-xs">Sin datos</span>}
+                          </td>
+                          <td className="px-6 py-3 text-right tabular-nums text-slate-400 text-sm">
+                            {c != null ? `${(c * (1 + margin / 100)).toFixed(2)} €` : "—"}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                  {/* Subtotals */}
+                  <tfoot>
+                    <tr className="border-t-2 border-slate-200 bg-slate-50">
+                      <td colSpan={2} className="px-6 py-3 font-black text-slate-500 text-xs uppercase tracking-wide">Coste total fabricación</td>
+                      <td className="px-6 py-3 text-right font-black text-slate-900 tabular-nums">{baseCost.toFixed(2)} €</td>
+                      <td />
+                    </tr>
+                    <tr className="bg-slate-900">
+                      <td colSpan={2} className="px-6 py-4 font-black text-slate-300 text-xs uppercase tracking-wide">
+                        PVP pack · margen {margin}% {showPsych ? "· precio psicológico" : ""}
+                      </td>
+                      <td className="px-6 py-4 text-right">
+                        {packProfit != null && (
+                          <span className="text-xs font-bold text-green-400">+{packProfit.toFixed(0)} € beneficio</span>
+                        )}
+                        {packMargin != null && (
+                          <div className="text-[10px] text-slate-400">{packMargin.toFixed(0)}% margen real</div>
+                        )}
+                      </td>
+                      <td className="px-6 py-4 text-right font-black text-white tabular-nums text-2xl">
+                        {packPvp != null ? `${packPvp} €` : "—"}
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
+            </div>
+          );
+        })()}
       </div>
 
-      {/* Psychological pricing tips */}
+      {/* Market intelligence */}
       <div className="bg-slate-900 rounded-3xl p-7 relative overflow-hidden">
         <div className="absolute inset-0 opacity-20"
           style={{ background: "radial-gradient(ellipse at right bottom, #a78bfa, transparent 60%)" }} />
-        <div className="relative">
-          <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">Estrategia de precios psicológicos</div>
-          <div className="grid grid-cols-3 gap-6">
+        <div className="relative space-y-6">
+          {/* Insight header */}
+          <div>
+            <div className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">Inteligencia de mercado · Marzo 2026</div>
+            <p className="text-sm text-slate-300 max-w-2xl">
+              Phoenix Wall es un sistema de <span className="text-white font-bold">pared plana (&lt;3cm)</span> con perfil SEG slim, sin retroiluminación.
+              Los sistemas backlit (Lucid, Expolinc, Display Wizard) no son comparables — requieren 5–10cm de profundidad.
+              El único comparable estructural directo son marcos SEG de pared delgados (€100–370/panel), frente a los cuales Phoenix Wall tiene
+              <span className="text-white font-bold"> NFC + 336 imanes ALIGN</span> como diferenciador sin equivalente en mercado.
+            </p>
+          </div>
+
+          {/* Competitor benchmarks */}
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              {
+                cat: "SEG pared delgado",
+                ref: "SquareSigns · fabricantes SEG",
+                range: "€100 – €370 / panel",
+                note: "Marco aluminio slim + tela. Plano (<3cm). Sin NFC ni magnética. Comparable estructural directo.",
+                color: "text-slate-300",
+              },
+              {
+                cat: "Marco magnético premium",
+                ref: "WhiteWall · Saal Digital",
+                range: "€84 – €300+ / marco",
+                note: "Intercambio por imán. Individual, no modular. Solo foto, no SEG tela grande.",
+                color: "text-slate-300",
+              },
+              {
+                cat: "SEG backlit / lightbox",
+                ref: "Lucid · Expolinc · Display Wizard",
+                range: "€500 – €4,000 / config.",
+                note: "⚠️ No comparable — requieren 5–10cm de profundidad. Phoenix Wall es pared plana <3cm.",
+                color: "text-orange-400",
+              },
+              {
+                cat: "Modular magnético trade show",
+                ref: "Modnetix",
+                range: "$1,500 – $4,500 USD / kit",
+                note: "Stretch fabric con conexión magnética. Para ferias, no pared permanente. Sin NFC.",
+                color: "text-slate-300",
+              },
+              {
+                cat: "NFC + E-Ink",
+                ref: "InkPoster · Reflection Frame",
+                range: "$300 – $6,000 USD / unidad",
+                note: "NFC tap-to-update. Panel individual, no sistema modular. Ultra-premium single frame.",
+                color: "text-violet-300",
+              },
+              {
+                cat: "Phoenix Wall",
+                ref: "Único en mercado",
+                range: "SEG plano + NFC + ALIGN",
+                note: "Pared <3cm, tela intercambiable, matriz magnética 336 imanes, chip NFC por panel. Sin equivalente.",
+                color: "text-[#d6ff6b]",
+              },
+            ].map((item) => (
+              <div key={item.cat} className="bg-white/5 rounded-2xl p-4">
+                <div className={`text-[10px] font-black uppercase tracking-widest mb-1 ${item.color}`}>{item.cat}</div>
+                <div className="text-xs text-slate-400 mb-1">{item.ref}</div>
+                <div className="text-sm font-bold text-white mb-2">{item.range}</div>
+                <p className="text-[11px] text-slate-500 leading-relaxed">{item.note}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Psych tips */}
+          <div className="border-t border-white/10 pt-5 grid grid-cols-3 gap-6">
             {[
               {
                 title: "Charm pricing",
@@ -413,8 +743,8 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
               },
             ].map((tip) => (
               <div key={tip.title}>
-                <div className="text-2xl mb-2">{tip.icon}</div>
-                <div className="font-black text-white text-sm mb-2">{tip.title}</div>
+                <div className="text-xl mb-2">{tip.icon}</div>
+                <div className="font-black text-white text-sm mb-1.5">{tip.title}</div>
                 <p className="text-xs text-slate-400 leading-relaxed">{tip.desc}</p>
               </div>
             ))}

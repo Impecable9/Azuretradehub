@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <!-- Background -->
+  <rect width="100" height="100" rx="22" fill="#0f172a"/>
+  <!-- Geometric A — two diagonals + crossbar -->
+  <path d="M22 77 L50 21 L78 77" stroke="white" stroke-width="9" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+  <line x1="35" y1="58" x2="65" y2="58" stroke="white" stroke-width="9" stroke-linecap="round"/>
+  <!-- Hub accent dot at apex -->
+  <circle cx="50" cy="21" r="6.5" fill="#d6ff6b"/>
+  <!-- Small connecting node dots at base -->
+  <circle cx="22" cy="77" r="3.5" fill="#334155"/>
+  <circle cx="78" cy="77" r="3.5" fill="#334155"/>
+</svg>

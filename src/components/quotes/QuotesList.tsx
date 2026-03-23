@@ -43,10 +43,12 @@ function detectVariant(title: string): "FREE" | "ALIGN" | null {
 
 export function QuotesList({ quotes }: { quotes: Quote[] }) {
   const [variant, setVariant] = useState<Variant>("all");
+  const [sizeFilter, setSizeFilter] = useState<string>("all");
 
   const filtered = quotes.filter((q) => {
-    if (variant === "all") return true;
-    return detectVariant(q.title) === variant;
+    const variantMatch = variant === "all" || detectVariant(q.title) === variant;
+    const sizeMatch = sizeFilter === "all" || q.title.toLowerCase().includes(sizeFilter.toLowerCase());
+    return variantMatch && sizeMatch;
   });
 
   const total = filtered.reduce((a, q) => a + (q.totalCost ?? 0), 0);
@@ -94,6 +96,23 @@ export function QuotesList({ quotes }: { quotes: Quote[] }) {
             <Plus className="w-4 h-4" /> Nuevo
           </Link>
         </div>
+      </div>
+
+      {/* Size filter */}
+      <div className="flex items-center gap-1.5 flex-wrap">
+        {["all", "Brilliant", "Joy", "Abundant", "Nova", "Luna", "Gea"].map((s) => (
+          <button
+            key={s}
+            onClick={() => setSizeFilter(s)}
+            className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wide transition-all duration-150 ${
+              sizeFilter === s
+                ? "bg-slate-900 text-white"
+                : "bg-white border border-slate-200 text-slate-500 hover:border-slate-400"
+            }`}
+          >
+            {s === "all" ? "Todos los tamaños" : s}
+          </button>
+        ))}
       </div>
 
       {/* Phoenix Wall sizes grid */}

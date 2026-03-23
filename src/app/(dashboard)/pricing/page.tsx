@@ -52,15 +52,35 @@ export default async function PricingPage() {
     return null;
   }
 
+  // Real supplier quote defaults (updated 2026-03):
+  // mdf: Zetar/Wendy WI25001, 8mm MDF @500pcs EXW China, $4.70 = €4.33
+  // chapa: steel sheet estimate (not yet quoted)
+  // iman: 336× D5×2mm N52 @$0.06 = $20.16 = €18.55 per ALIGN panel
+  // epoxy: 3M VHB adhesive from Zetar, $0.70 = €0.64
+  // perfil: Impretienda 19mm ~2.55ml/panel @€10.40/ml (Spanish no-MOQ)
+  // silicona: SEG bead cord estimate
+  // nfc: NTAG213 IDRFID IDN7645, ~$0.12 = €0.11
+  // tela: Changzhou Phoneto Joy size @300pcs, $6.60 = €6.08 (per panel, tela_m2 ≈ 0.368 m²)
+  const DEFAULTS = {
+    mdf_panel:   4.33,
+    chapa_m2:    5.50,
+    perfil_m:   10.40,
+    tela_m2:    16.52, // €6.08 / 0.368 m² ≈ €16.52/m²
+    iman_ud:     0.055, // D5×2mm N52 @$0.06
+    epoxy_kg:    0.64,  // 3M VHB per panel (not per kg — used as flat cost)
+    nfc_chip:    0.11,
+    silicona_m:  0.50,
+  };
+
   const unitCosts = {
-    mdf_panel:      extractCost(["mdf", "tablero", "madera"]),     // € per panel
-    chapa_m2:       extractCost(["chapa", "acero"]),               // € per m²
-    perfil_m:       extractCost(["perfil", "seg", "aluminio"]),    // € per m
-    tela_m2:        extractCost(["tela", "textil", "sublim"]),     // € per m²
-    iman_ud:        extractCost(["imán", "iman", "neodimio", "magnet"]), // € per unit
-    epoxy_kg:       extractCost(["epoxy", "epoxi", "adhesivo"]),   // € per kg
-    nfc_chip:       extractCost(["nfc", "chip", "ntag"]),          // € per chip
-    silicona_m:     extractCost(["silicona"]),                      // € per m
+    mdf_panel:      extractCost(["mdf", "tablero", "madera"])     ?? DEFAULTS.mdf_panel,
+    chapa_m2:       extractCost(["chapa", "acero"])               ?? DEFAULTS.chapa_m2,
+    perfil_m:       extractCost(["perfil", "seg", "aluminio"])    ?? DEFAULTS.perfil_m,
+    tela_m2:        extractCost(["tela", "textil", "sublim"])     ?? DEFAULTS.tela_m2,
+    iman_ud:        extractCost(["imán", "iman", "neodimio", "magnet"]) ?? DEFAULTS.iman_ud,
+    epoxy_kg:       extractCost(["epoxy", "epoxi", "adhesivo"])   ?? DEFAULTS.epoxy_kg,
+    nfc_chip:       extractCost(["nfc", "chip", "ntag"])          ?? DEFAULTS.nfc_chip,
+    silicona_m:     extractCost(["silicona"])                      ?? DEFAULTS.silicona_m,
   };
 
   // ALIGN: 336 imanes N52 D5×2mm por panel (38×78cm = 0.2964 m²)
