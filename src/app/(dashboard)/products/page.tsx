@@ -185,17 +185,11 @@ const ACCESSORIES = [
   {
     name: "Heartframe",
     category: "Marcos",
-    desc: "Soporte trasero que convierte cualquier marco en accesorio magnético para Phoenix Wall ALIGN. Impreso en PLA (Bambu) o vaciado en cerámica. 9 imanes D5×3mm a 3cm de separación. Se fija con cinta de doble cara a la parte trasera del marco.",
-    magnets: "9 imanes D5×3mm",
-    variants: ["PLA · impresión 3D", "Cerámica · molde vaciado", "MDF · corte CNC"],
+    desc: "Convierte cualquier marco estándar en un cuadro magnético inteligente para Phoenix Wall ALIGN. Soporte trasero impreso en PLA (Bambu) o vaciado en cerámica con 9 imanes D5×3mm. Incluye chip NFC IDN7645 embebido — acercar el móvil lanza la URL que tú programas (sin app). El cliente pega su foto o arte en cualquier marco, adhiere el Heartframe por detrás, y el cuadro se cuelga magnéticamente sobre la pared ALIGN.",
+    magnets: "9 imanes D5×3mm + NFC incluido",
+    variants: ["PLA · impresión 3D (Bambu)", "Cerámica · molde vaciado", "MDF · corte CNC"],
     badge: "Nuevo",
     img: "/products/accessories/marco-bga.jpg",
-  },
-  {
-    name: "NFC Chip NTAG213",
-    category: "Conectividad",
-    desc: "Chip NFC NXP NTAG213 de 144 bytes integrado en cada panel. Antena 76×45mm. Tap con el móvil para acceder al contenido digital vinculado: catálogo, historia, portfolio o experiencia interactiva. Certificado CE + RoHS. Hasta 100.000 ciclos de escritura.",
-    img: "/products/accessories/nfc-chip.jpg",
   },
   {
     name: "Kit ALIGN Upgrade",
@@ -307,7 +301,7 @@ export default function ProductsPage() {
       {/* Tab: Accesorios */}
       {tab === 2 && (
         <div className="space-y-5">
-          {["Marcos", "Estanterías", "Organización", "Conectividad"].map((cat) => {
+          {["Marcos", "Estanterías", "Organización"].map((cat) => {
             const items = ACCESSORIES.filter((a) => a.category === cat);
             if (!items.length) return null;
             return (

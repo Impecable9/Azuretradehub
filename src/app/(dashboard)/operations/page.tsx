@@ -37,31 +37,28 @@ const SUPPLIERS = [
   {
     name: "Zetar Industry (Wendy)",
     country: "🇨🇳 China (EXW)",
-    component: "Tablero MDF perforado + imanes N52",
-    price: "4.70 USD/panel (@500) · 0.06 USD/imán D5×2mm",
-    moq: "MOQ 500 tableros",
+    component: "Imanes D5×2mm N52 + D5×3mm + D5×6mm",
+    price: "0.06 USD/ud D5×2mm · 0.069 €/ud D5×3mm · 0.098 USD/ud D5×6mm",
+    moq: "MOQ pendiente confirmar (estim. 5k–10k)",
     delivery: "30–40 días",
     date: "Noviembre 2025",
     quotes: [
-      { label: "MDF + acrilico + magnets", pdf: "/docs/quotes/Zetar-Wendy-WI25001-MDF-magnets.pdf" },
       { label: "Imanes D5×2mm y D5×6mm", pdf: "/docs/quotes/Zetar-Wendy-magnets-D5x2mm-D5x6mm.pdf" },
     ],
     highlight: false,
-    note: "Proveedor clave para ALIGN. Cubre MDF, imanes, acrílico y adhesivo 3M.",
+    note: "Solo imanes — ya no compramos MDF a Zetar (nuevo proceso: MDF local + chapa + molde Bambu, sin perforar).",
   },
   {
-    name: "Kamy Kung (GUNGI)",
-    country: "🇨🇳 China (EXW)",
-    component: "Heartframe MDF 8×8cm + 9 imanes D5×12mm",
-    price: "3.58 USD/ud (@1000)",
-    moq: "MOQ 1000",
-    delivery: "15 días",
-    date: "Octubre 2025",
-    quotes: [
-      { label: "Heartframe MDF completo", pdf: "/docs/quotes/KamyKung-MDF-Heartframe.pdf" },
-    ],
-    highlight: false,
-    note: "Incluye imanes + VHB + laser engraving. Alternativa industrial al PLA artesanal.",
+    name: "Bambu Lab (producción propia)",
+    country: "🇪🇸 Local (impresora propia)",
+    component: "Heartframe PLA (HF-S / HF-M / HF-L / HF-XL) + molde posicionador 336 huecos",
+    price: "~€0.50 PLA/ud · molde ~€5 único",
+    moq: "Sin MOQ — impresión por demanda",
+    delivery: "2–4h impresión",
+    date: "2026",
+    quotes: [],
+    highlight: true,
+    note: "Heartframes impresos en casa. Coste marginal ~€0.50 PLA + chip NFC €0.11 = €0.61 total material. Margen >95%. El molde posicionador (30mm grid) es la clave del nuevo proceso sin perforar.",
   },
   {
     name: "Terrence Metal (Ningbo)",
@@ -108,16 +105,16 @@ const SUPPLIERS = [
   {
     name: "Shenzhen IDRFID",
     country: "🇨🇳 China",
-    component: "NFC Chip IDN7645 (NXP NTAG213)",
-    price: "~0.10–0.15 USD/ud (@1000)",
+    component: "NFC Chip IDN7645 — va en Heartframes (cuadros magnéticos)",
+    price: "~0.12 USD/ud (@1000)",
     moq: "1000/rollo",
     delivery: "Estándar",
     date: "2025",
     quotes: [
-      { label: "Datasheet IDN7645 NTAG213", pdf: "/docs/quotes/IDRFID-IDN7645-NTAG213-datasheet.pdf" },
+      { label: "Datasheet IDN7645", pdf: "/docs/quotes/IDRFID-IDN7645-NTAG213-datasheet.pdf" },
     ],
     highlight: false,
-    note: "NTAG213: 144 bytes, antena 76×45mm, lectura 0–80mm, 100k ciclos escritura. CE+RoHS.",
+    note: "El chip NFC IDN7645 va embebido en cada Heartframe — NO en el tablero base. 1 chip/Heartframe, programable sin app (NFC Tools iOS/Android).",
   },
   {
     name: "Yes Lab 82+",
@@ -144,27 +141,31 @@ type BomRow = {
   isTotals?: boolean;
 };
 
+// Nuevo proceso: MDF 8mm plano + chapa magnética 0.5mm (AMBAS variantes) + molde Bambu (sin perforar)
+// NFC chip va en los Heartframes, NO en el tablero base.
+// Referencia: Brilliant (1 tablero). ALIGN = base + 336 imanes. FREE = base sin imanes.
 const BOM_ROWS: BomRow[] = [
-  { component: "MDF perforado (Zetar)", align_es: "€4.33", align_cn: "€4.33", free_es: "~€3.00*", free_cn: "~€3.00*" },
-  { component: "Imanes D5×2mm ×336 (Zetar)", align_es: "€18.55", align_cn: "€18.55", free_es: "—", free_cn: "—" },
-  { component: "Adhesivo 3M VHB", align_es: "€0.64", align_cn: "€0.64", free_es: "€0.64", free_cn: "€0.64" },
-  { component: "Chip NFC NTAG213", align_es: "€0.11", align_cn: "€0.11", free_es: "€0.11", free_cn: "€0.11" },
-  { component: "Perfil SEG 19mm ~2.55ml", align_es: "€26.52", align_cn: "€2.30", free_es: "€26.52", free_cn: "€2.30" },
-  { component: "Tela SEG impresa (Joy)", align_es: "€6.08", align_cn: "€6.08", free_es: "€6.08", free_cn: "€6.08" },
-  { component: "Silicona SEG cord", align_es: "€0.50", align_cn: "€0.50", free_es: "€0.50", free_cn: "€0.50" },
-  { component: "Chapa acero (FREE)", align_es: "—", align_cn: "—", free_es: "~€5.50*", free_cn: "~€5.50*" },
-  { component: "TOTAL s/montaje", align_es: "~€56.73", align_cn: "€32.51", free_es: "~€42.35", free_cn: "€18.13", isTotals: true },
-  { component: "Montaje (30min @ €15/h)", align_es: "€7.50", align_cn: "€7.50", free_es: "€7.50", free_cn: "€7.50" },
-  { component: "TOTAL c/montaje", align_es: "~€64.23", align_cn: "€40.01", free_es: "~€49.85", free_cn: "€25.63", isTotals: true },
+  { component: "MDF 8mm 780×390mm (local/TOSIZE)", align_es: "~€2.50*", align_cn: "~€2.50*", free_es: "~€2.50*", free_cn: "~€2.50*" },
+  { component: "Chapa magnética 0.5mm (VHB 3M)", align_es: "~€5.50*", align_cn: "~€5.50*", free_es: "~€5.50*", free_cn: "~€5.50*" },
+  { component: "Imanes D5×2mm N52 ×336 (Zetar)", align_es: "€18.55", align_cn: "€18.55", free_es: "—", free_cn: "—" },
+  { component: "Epoxy bicomponente", align_es: "€0.80", align_cn: "€0.80", free_es: "—", free_cn: "—" },
+  { component: "Molde posicionador (amort. Bambu)", align_es: "€0.10", align_cn: "€0.10", free_es: "—", free_cn: "—" },
+  { component: "Perfil SEG 19mm ~2.55ml (Brilliant)", align_es: "€26.52", align_cn: "€2.30", free_es: "€26.52", free_cn: "€2.30" },
+  { component: "Tela SEG impresa (City Fabrics)", align_es: "€6.08", align_cn: "€6.08", free_es: "€6.08", free_cn: "€6.08" },
+  { component: "Packaging", align_es: "€4.00", align_cn: "€4.00", free_es: "€4.00", free_cn: "€4.00" },
+  { component: "TOTAL s/montaje", align_es: "~€64.05", align_cn: "~€39.83", free_es: "~€50.60", free_cn: "~€26.38", isTotals: true },
+  { component: "Montaje (50min/tablero @ €15/h)", align_es: "€12.50", align_cn: "€12.50", free_es: "€12.50", free_cn: "€12.50" },
+  { component: "TOTAL c/montaje", align_es: "~€76.55", align_cn: "~€52.33", free_es: "~€63.10", free_cn: "~€38.88", isTotals: true },
 ];
 
 const ORDER_STEPS = [
-  { task: "Recepción y verificación de componentes", time: "15 min" },
-  { task: "Ensamblaje del tablero (perforar/colocar imanes + epoxy)", time: "45 min" },
-  { task: "Montaje perfil SEG + instalación tela", time: "30 min" },
-  { task: "Control de calidad + programar NFC", time: "15 min" },
-  { task: "Packaging (caja + insertos + etiquetado)", time: "20 min" },
-  { task: "Preparar envío (label, tracking, drop-off)", time: "15 min" },
+  { task: "Cortar MDF + aplicar chapa con VHB 3M", time: "7 min" },
+  { task: "Colocar molde Bambu + depositar 336 imanes", time: "12 min" },
+  { task: "Epoxy bicomponente + curado (sin perforar)", time: "20 min" },
+  { task: "Aplicar VHB perímetro + retirar molde", time: "5 min" },
+  { task: "Montar perfil SEG + insertar tela (o envío kit)", time: "15 min" },
+  { task: "Control de calidad + packaging + etiquetado", time: "15 min" },
+  { task: "Preparar envío (label, tracking, drop-off)", time: "10 min" },
 ];
 
 const HIDDEN_COSTS = [
@@ -326,7 +327,7 @@ export default function OperationsPage() {
           </div>
           <div className="px-5 py-3 border-t border-slate-100 bg-slate-50">
             <p className="text-[10px] text-slate-500 leading-relaxed">
-              Los costes marcados con * son estimaciones pendientes de cotización. Perfil ES = Impretienda sin MOQ. Perfil CN = MESCO MOQ 40 ud/talla + flete + aduana.
+              Costes marcados con * pendientes de cotización real (ver Estrategia → Catálogo Proveedores). Nuevo proceso sin perforar: MDF plano + chapa 0.5mm + molde Bambu 30mm grid. NFC chip va en Heartframes — no en tablero base. Perfil ES = Impretienda sin MOQ. Perfil CN = MESCO MOQ 40 ud/talla + flete + aduana.
             </p>
           </div>
         </div>
@@ -361,7 +362,7 @@ export default function OperationsPage() {
             </div>
             <div className="mt-4 pt-3 border-t border-amber-100 flex items-center justify-between">
               <span className="text-xs font-black text-slate-900">Total</span>
-              <span className="text-sm font-black text-amber-600">~2.5 h/tablero</span>
+              <span className="text-sm font-black text-amber-600">~84 min/tablero</span>
             </div>
           </div>
 
@@ -485,8 +486,8 @@ export default function OperationsPage() {
                 <div>
                   <p className="text-slate-400 text-xs font-bold uppercase mb-1">Producto inicial</p>
                   <p className="text-white font-medium leading-snug">
-                    Vende <strong className="text-lime-400">Brilliant ALIGN + Heartframe ×2 + Marco BGA ×2</strong> como pack de entrada.
-                    Coste ~€100 · Pack PVP <strong className="text-lime-400">€399</strong> · Margen ~€300 (75%).
+                    Vende el pack <strong className="text-lime-400">Essential (Brilliant ALIGN + 1 HF Standard)</strong> a <strong className="text-lime-400">€319</strong> como primer producto.
+                    Coste base ~€79 · Margen ~€240 (75%). El HF Standard convierte el primer marco del cliente en un cuadro NFC magnético.
                   </p>
                 </div>
                 <div>

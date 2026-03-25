@@ -7,14 +7,14 @@ import { ArrowRight, ChevronRight, Package, AlertCircle, Clock, CheckCircle } fr
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
 const PHOENIX_COMPONENTS = [
-  { key: "mdf",      label: "MDF 10mm 38×78cm",    category: "Madera" },
-  { key: "chapa",    label: "Chapa acero 0.6mm",    category: "Metal" },
-  { key: "perfil",   label: "Perfil SEG aluminio",  category: "SEG" },
-  { key: "silicona", label: "Silicona SEG",          category: "SEG" },
-  { key: "tela",     label: "Tela SEG",              category: "Textil" },
-  { key: "nfc",      label: "Chip NFC NTAG213",      category: "Electrónica" },
-  { key: "iman",     label: "Imanes neodimio",       category: "Electrónica" },
-  { key: "epoxy",    label: "Epoxy bicomponente",    category: "Adhesivos" },
+  { key: "mdf",       label: "MDF 8mm 780×390mm",       category: "Tablero" },
+  { key: "chapa",     label: "Chapa magnética 0.5mm",   category: "Tablero" },
+  { key: "iman",      label: "Imanes D5×2mm N52 ×336",  category: "Tablero" },
+  { key: "perfil",    label: "Perfil SEG aluminio",     category: "SEG" },
+  { key: "tela",      label: "Tela SEG impresa",        category: "SEG" },
+  { key: "heartframe",label: "Heartframe PLA + NFC",    category: "Accesorio" },
+  { key: "epoxy",     label: "Epoxy bicomponente",      category: "Adhesivos" },
+  { key: "packaging", label: "Packaging / caja",        category: "Logística" },
 ];
 
 const STATUS_MAP: Record<string, { label: string; color: string }> = {

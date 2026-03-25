@@ -52,47 +52,42 @@ export default async function PricingPage() {
     return null;
   }
 
-  // Real supplier quote defaults (updated 2026-03):
-  // mdf: Zetar/Wendy WI25001, 8mm MDF @500pcs EXW China, $4.70 = €4.33
-  // chapa: steel sheet estimate (not yet quoted)
-  // iman: 336× D5×2mm N52 @$0.06 = $20.16 = €18.55 per ALIGN panel
-  // epoxy: 3M VHB adhesive from Zetar, $0.70 = €0.64
-  // perfil: Impretienda 19mm ~2.55ml/panel @€10.40/ml (Spanish no-MOQ)
-  // silicona: SEG bead cord estimate
-  // nfc: NTAG213 IDRFID IDN7645, ~$0.12 = €0.11
-  // tela: Changzhou Phoneto Joy size @300pcs, $6.60 = €6.08 (per panel, tela_m2 ≈ 0.368 m²)
+  // Costes actualizados 2026-03 — nuevo proceso: MDF plano local + chapa 0.5mm + molde Bambu (sin perforar)
+  // NFC chip va en los Heartframes, NO en el tablero base.
+  // mdf: local/TOSIZE.es ~€2.50/ud (sin agujeros — más barato que Zetar perforado)
+  // chapa: chapa magnética 0.5mm 780×390mm ~€5.50 (cotización pendiente Evek.red)
+  // iman: 336× D5×2mm N52 Zetar @$0.06 = €18.55 per ALIGN panel
+  // epoxy: bicomponente pistola ~€0.80/tablero
+  // perfil: Impretienda 19mm ~2.55ml/panel @€10.40/ml (España sin MOQ)
+  // tela: Changzhou Phoneto @€6.08/panel (estimado)
   const DEFAULTS = {
-    mdf_panel:   4.33,
-    chapa_m2:    5.50,
-    perfil_m:   10.40,
-    tela_m2:    16.52, // €6.08 / 0.368 m² ≈ €16.52/m²
-    iman_ud:     0.055, // D5×2mm N52 @$0.06
-    epoxy_kg:    0.64,  // 3M VHB per panel (not per kg — used as flat cost)
-    nfc_chip:    0.11,
+    mdf_panel:   2.50,   // local/TOSIZE — sin agujeros (vs €4.33 Zetar perforado)
+    chapa_m2:    5.50,   // chapa magnética 0.5mm — estimado, pendiente cotizar
+    perfil_m:   10.40,   // Impretienda ES sin MOQ
+    tela_m2:    16.52,   // €6.08 / 0.368 m² ≈ €16.52/m²
+    iman_ud:     0.055,  // D5×2mm N52 Zetar @$0.06
+    epoxy_panel: 0.80,   // epoxy bicomponente por tablero ALIGN
     silicona_m:  0.50,
   };
 
   const unitCosts = {
-    mdf_panel:      extractCost(["mdf", "tablero", "madera"])     ?? DEFAULTS.mdf_panel,
-    chapa_m2:       extractCost(["chapa", "acero"])               ?? DEFAULTS.chapa_m2,
-    perfil_m:       extractCost(["perfil", "seg", "aluminio"])    ?? DEFAULTS.perfil_m,
-    tela_m2:        extractCost(["tela", "textil", "sublim"])     ?? DEFAULTS.tela_m2,
+    mdf_panel:      extractCost(["mdf", "tablero", "madera"])           ?? DEFAULTS.mdf_panel,
+    chapa_m2:       extractCost(["chapa", "acero"])                     ?? DEFAULTS.chapa_m2,
+    perfil_m:       extractCost(["perfil", "seg", "aluminio"])          ?? DEFAULTS.perfil_m,
+    tela_m2:        extractCost(["tela", "textil", "sublim"])           ?? DEFAULTS.tela_m2,
     iman_ud:        extractCost(["imán", "iman", "neodimio", "magnet"]) ?? DEFAULTS.iman_ud,
-    epoxy_kg:       extractCost(["epoxy", "epoxi", "adhesivo"])   ?? DEFAULTS.epoxy_kg,
-    nfc_chip:       extractCost(["nfc", "chip", "ntag"])          ?? DEFAULTS.nfc_chip,
-    silicona_m:     extractCost(["silicona"])                      ?? DEFAULTS.silicona_m,
+    epoxy_panel:    extractCost(["epoxy", "epoxi", "adhesivo"])         ?? DEFAULTS.epoxy_panel,
+    silicona_m:     extractCost(["silicona"])                           ?? DEFAULTS.silicona_m,
   };
 
-  // ALIGN: 336 imanes N52 D5×2mm por panel (38×78cm = 0.2964 m²)
+  // ALIGN: 336 imanes N52 D5×2mm por panel (780×390mm)
   const IMANES_PER_PANEL = 336;
-  const EPOXY_KG_PER_M2 = 0.05; // 2mm layer ≈ 50g/m²
 
   return (
     <PricingClient
       sizes={SIZES as unknown as typeof SIZES}
       unitCosts={unitCosts}
       imanesPerPanel={IMANES_PER_PANEL}
-      epoxyKgPerM2={EPOXY_KG_PER_M2}
     />
   );
 }

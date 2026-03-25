@@ -19,8 +19,7 @@ type UnitCosts = {
   perfil_m:    number | null;
   tela_m2:     number | null;
   iman_ud:     number | null;
-  epoxy_kg:    number | null;
-  nfc_chip:    number | null;
+  epoxy_panel: number | null;  // por tablero ALIGN (NFC chip va en Heartframe, no aquí)
   silicona_m:  number | null;
 };
 
@@ -28,7 +27,6 @@ type Props = {
   sizes: readonly Size[];
   unitCosts: UnitCosts;
   imanesPerPanel: number;
-  epoxyKgPerM2: number;
 };
 
 // Market reference prices (EUR) — wall-mounted, non-backlit, slim (<3cm) SEG frame systems only.
@@ -146,7 +144,7 @@ const ACCESSORY_COSTS: Record<string, number> = {
   "Vidrio Museo UV70": 64.95,
 };
 
-export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }: Props) {
+export function PricingClient({ sizes, unitCosts, imanesPerPanel }: Props) {
   const [variant, setVariant] = useState<"FREE" | "ALIGN">("ALIGN");
   const [margin, setMargin] = useState(60); // 60% default margin
   const [showPsych, setShowPsych] = useState(true);
@@ -170,14 +168,12 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
       "Perfil SEG": costs.perfil_m != null ? costs.perfil_m * size.perfil_m : null,
       "Silicona SEG": costs.silicona_m != null ? costs.silicona_m * size.perfil_m : null,
       "Tela SEG": costs.tela_m2 != null ? costs.tela_m2 * size.tela_m2 : null,
-      "Chip NFC": costs.nfc_chip != null ? costs.nfc_chip * size.panels : null,
     };
 
     if (v === "ALIGN") {
       const imanCount = imanesPerPanel * size.panels;
-      const epoxyKg = chapa_area * epoxyKgPerM2;
       breakdown["Imanes N52"] = costs.iman_ud != null ? costs.iman_ud * imanCount : null;
-      breakdown["Epoxy 2mm"] = costs.epoxy_kg != null ? costs.epoxy_kg * epoxyKg : null;
+      breakdown["Epoxy"] = costs.epoxy_panel != null ? costs.epoxy_panel * size.panels : null;
     }
 
     const values = Object.values(breakdown);
@@ -266,13 +262,12 @@ export function PricingClient({ sizes, unitCosts, imanesPerPanel, epoxyKgPerM2 }
             "MDF (por panel)":    { key: "mdf_panel",   unit: "€/panel" },
             "Chapa acero":        { key: "chapa_m2",    unit: "€/m²" },
             "Perfil SEG":         { key: "perfil_m",    unit: "€/m" },
-            "Silicona SEG":       { key: "silicona_m",  unit: "€/m" },
-            "Tela SEG":           { key: "tela_m2",     unit: "€/m²" },
-            "Chip NFC":           { key: "nfc_chip",    unit: "€/ud" },
-            "Imán N52 D5×2mm":   { key: "iman_ud",     unit: "€/ud" },
-            "Epoxy bicomponente": { key: "epoxy_kg",    unit: "€/kg" },
+            "Silicona SEG":       { key: "silicona_m",   unit: "€/m" },
+            "Tela SEG":           { key: "tela_m2",      unit: "€/m²" },
+            "Imán N52 D5×2mm":   { key: "iman_ud",      unit: "€/ud" },
+            "Epoxy (por tablero)":{ key: "epoxy_panel",  unit: "€/tablero" },
           }) as [string, { key: keyof UnitCosts; unit: string }][]).map(([label, { key, unit }]) => (
-            <div key={key} className={`${(key === "iman_ud" || key === "epoxy_kg") && variant === "FREE" ? "opacity-30" : ""}`}>
+            <div key={key} className={`${(key === "iman_ud" || key === "epoxy_panel") && variant === "FREE" ? "opacity-30" : ""}`}>
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-wide mb-1">{label}</label>
               <div className="flex items-center gap-1.5">
                 <input

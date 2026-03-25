@@ -7,6 +7,16 @@ import {
   PRODUCT_ECONOMICS,
   MONTHLY_PROJECTIONS,
   PENDING_DECISIONS,
+  HEARTFRAME_PVP,
+  HEARTFRAME_MARGIN,
+  HEARTFRAME_VARIANTS,
+  FRAME_WEIGHT_GUIDE,
+  MAGNET_PHYSICS,
+  PACKS,
+  SUPPLIERS_CATALOG,
+  SUPPLIER_CATEGORIES,
+  INSTALLATION_TABLE,
+  INSTALL_RATES,
 } from "@/components/strategy/strategyCalc";
 
 // ── ASSEMBLY ANALYSIS ─────────────────────────────────────────────────────────
@@ -52,12 +62,12 @@ const ASSEMBLY_TASKS = [
     note: "Aplicar por lotes. Epoxy bicomponente 5 min: a los 20 min todo está curado. Retirar molde una vez cura.",
   },
   {
-    task: "Pegar NFC chip al dorso + VHB para tela",
+    task: "Aplicar VHB en perímetro frontal para fijar tela",
     who: "tú",
-    time: "3 min",
+    time: "2 min",
     tool: "Manual",
     skippable: false,
-    note: "NFC al dorso (lado plano del MDF). VHB en perimetro frontal para fijar la tela.",
+    note: "VHB en el borde frontal del MDF para que la tela SEG quede fija al tensarse. El NFC va en los Heartframes (cuadros), no en el tablero.",
   },
   {
     task: "Montar perfil SEG (4 barras + esquinas)",
@@ -238,7 +248,219 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 2. RENTABILIDAD POR PRODUCTO ─── */}
+      {/* ── 2. HEARTFRAME — VARIANTES Y FÍSICA DE IMANES ─── */}
+      <section>
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+          Heartframe — Cuadros magnéticos con NFC · Variantes y cálculo de sujeción
+        </h2>
+        <p className="text-xs text-slate-400 mb-4">
+          El NFC va en el Heartframe, no en el tablero. El Heartframe es un soporte trasero impreso en Bambu que
+          convierte cualquier marco estándar en un cuadro magnético inteligente. Hay 4 variantes según el tamaño y
+          peso del cuadro del cliente. Todos tienen el mismo chip NFC IDN7645 embebido.
+          <span className="text-slate-600 font-bold ml-1">Incluir pad de goma en el dorso es obligatorio para las fuerzas indicadas.</span>
+        </p>
+
+        {/* Physics summary */}
+        <div className="bg-slate-900 rounded-2xl px-4 py-3 text-[10px] text-slate-300 mb-4 grid grid-cols-4 gap-4">
+          <div>
+            <p className="font-black text-white mb-1">D5×3mm N52 (pull/steel)</p>
+            <p className="text-slate-300">{MAGNET_PHYSICS.D5x3_pullSteel} kg confirmado</p>
+            <p className="text-slate-400 italic">supermagnete / supreme magnets</p>
+          </div>
+          <div>
+            <p className="font-black text-white mb-1">D5×6mm N52 (pull/steel)</p>
+            <p className="text-slate-300">{MAGNET_PHYSICS.D5x6_pullSteel} kg (estimado)</p>
+            <p className="text-slate-400 italic">rango fabricante: 1.2–1.5 kg</p>
+          </div>
+          <div>
+            <p className="font-black text-white mb-1">Factor superficie ALIGN</p>
+            <p className="text-slate-300">×{MAGNET_PHYSICS.boardFactor} (chapa + imanes)</p>
+            <p className="text-slate-400 italic">inferior a acero puro</p>
+          </div>
+          <div>
+            <p className="font-black text-white mb-1">Shear vertical · pad goma</p>
+            <p className="text-slate-300">{MAGNET_PHYSICS.shearRubber * 100}% de pull · SF {MAGNET_PHYSICS.safetyFactor}×</p>
+            <p className="text-slate-400 italic">supermagnete.de FAQ</p>
+          </div>
+        </div>
+
+        {/* Variants table */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-4">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-900 text-white">
+                <th className="text-left px-4 py-3 font-black text-[10px] uppercase tracking-wide">Modelo</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Grid</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Imán</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Huella</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Carga segura</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Cuadro max.</th>
+                <th className="text-left px-4 py-3 font-black text-[10px] uppercase tracking-wide">Compatibilidad</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Coste</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">PVP</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Margen</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {HEARTFRAME_VARIANTS.map((hf) => {
+                const margin = Math.round(((hf.pvp - hf.costEUR) / hf.pvp) * 100);
+                return (
+                  <tr key={hf.id} className="hover:bg-slate-50">
+                    <td className="px-4 py-3 font-black text-slate-900">{hf.name}</td>
+                    <td className="px-4 py-3 text-center">
+                      <span className="text-[10px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                        {hf.grid} · {hf.count} imanes
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-center text-[10px] font-bold text-slate-600">{hf.magnet}</td>
+                    <td className="px-4 py-3 text-center text-[10px] text-slate-500 font-mono">{hf.footprint}</td>
+                    <td className="px-4 py-3 text-right font-black text-slate-900 tabular-nums">{hf.safeLoad} g</td>
+                    <td className="px-4 py-3 text-right font-black text-amber-700 tabular-nums">{hf.maxFrame} g</td>
+                    <td className="px-4 py-3 text-[10px] text-slate-500">{hf.compatFrames}</td>
+                    <td className="px-4 py-3 text-right text-slate-500 tabular-nums">{hf.costEUR} €</td>
+                    <td className="px-4 py-3 text-right font-black text-slate-900 tabular-nums">{hf.pvp} €</td>
+                    <td className="px-4 py-3 text-right font-black text-green-600 tabular-nums">{margin}%</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="px-4 py-2 text-[10px] text-slate-400 bg-slate-50 italic">
+            * Carga segura = carga real / 1.6 (margen adicional). Fórmula: N × {MAGNET_PHYSICS.safePerD5x3} kg/imán (D5×3) o {MAGNET_PHYSICS.safePerD5x6} kg/imán (D5×6). Con pad de goma. SF {MAGNET_PHYSICS.safetyFactor}× incluido.
+          </p>
+        </div>
+
+        {/* Frame weight guide */}
+        <h3 className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">
+          Guía de compatibilidad — tamaño de marco → Heartframe recomendado
+        </h3>
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-800 text-white">
+                <th className="text-left px-4 py-2.5 font-black text-[10px] uppercase tracking-wide">Marco</th>
+                <th className="text-left px-4 py-2.5 font-black text-[10px] uppercase tracking-wide">Tipo</th>
+                <th className="text-right px-4 py-2.5 font-black text-[10px] uppercase tracking-wide">Peso est.</th>
+                <th className="text-center px-4 py-2.5 font-black text-[10px] uppercase tracking-wide">Heartframe</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-50">
+              {FRAME_WEIGHT_GUIDE.map((f, i) => {
+                const isLimit = f.hf.includes("límite");
+                const isNo    = f.hf.includes("No recomendado");
+                return (
+                  <tr key={i} className={isNo ? "bg-red-50/40" : isLimit ? "bg-amber-50/40" : "hover:bg-slate-50"}>
+                    <td className="px-4 py-2 font-black text-slate-900 font-mono text-[11px]">{f.dims}</td>
+                    <td className="px-4 py-2 text-slate-500">{f.type}</td>
+                    <td className="px-4 py-2 text-right font-bold text-slate-700 tabular-nums">{f.weightG} g</td>
+                    <td className="px-4 py-2 text-center">
+                      <span className={`text-[10px] font-black px-2 py-0.5 rounded-full ${
+                        isNo    ? "bg-red-100 text-red-700" :
+                        isLimit ? "bg-amber-100 text-amber-700" :
+                                  "bg-violet-100 text-violet-700"
+                      }`}>
+                        {f.hf}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      {/* ── 3. PACKS ─── */}
+      <section>
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+          Packs — Qué decoración incluye cada uno
+        </h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Todos los packs incluyen el marco SEG + <strong className="text-slate-600">1 tela City Fabrics</strong> (la "piel" del lienzo).
+          Los <strong className="text-slate-600">Heartframes</strong> (cuadros magnéticos con NFC) son el upsell principal — sin ellos,
+          el cliente decora solo con la tela y puede colgar sus propios cuadros si trae marcos compatibles.
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          {PACKS.map((pack) => {
+            const hfTotal = pack.heartframes.reduce((s, h) => s + h.pvp, 0);
+            return (
+              <div key={pack.id} className="bg-white rounded-3xl border border-slate-100 shadow-sm p-5">
+                <div className="flex items-start justify-between gap-3 mb-3">
+                  <div>
+                    <h3 className="font-black text-slate-900 text-sm">{pack.name}</h3>
+                    <p className="text-[11px] text-slate-400 mt-0.5 italic">{pack.tagline}</p>
+                  </div>
+                  <div className="text-right shrink-0">
+                    <p className="text-xl font-black text-slate-900">{pack.pvp} €</p>
+                    {pack.saving > 0 && (
+                      <p className="text-[10px] font-black text-green-600">−{pack.saving} € vs. suelto</p>
+                    )}
+                  </div>
+                </div>
+
+                {/* Base product */}
+                <div className="flex gap-1.5 flex-wrap mb-2">
+                  <span className="text-[10px] font-black bg-slate-900 text-white px-2.5 py-1 rounded-xl">
+                    {pack.base.size} {pack.base.variant}
+                  </span>
+                  <span className="text-[10px] font-bold bg-slate-100 text-slate-500 px-2.5 py-1 rounded-xl">
+                    1 tela City Fabrics
+                  </span>
+                </div>
+
+                {/* Heartframes */}
+                {pack.heartframes.length > 0 ? (
+                  <div className="flex gap-1.5 flex-wrap mb-2">
+                    {pack.heartframes.map((hf, i) => (
+                      <span key={i} className="text-[10px] font-black bg-violet-100 text-violet-700 px-2 py-0.5 rounded-full">
+                        🧲 {hf.model}
+                      </span>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="mb-2">
+                    <span className="text-[10px] font-bold bg-slate-50 text-slate-400 px-2.5 py-1 rounded-xl border border-dashed border-slate-200">
+                      sin cuadros · solo tela
+                    </span>
+                  </div>
+                )}
+
+                {/* Accessories */}
+                {pack.accessories.length > 0 && (
+                  <div className="flex gap-1.5 flex-wrap mb-2">
+                    {pack.accessories.map((acc) => (
+                      <span key={acc} className="text-[10px] font-bold bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full capitalize">
+                        + {acc}
+                      </span>
+                    ))}
+                  </div>
+                )}
+
+                {/* Cost breakdown */}
+                {pack.heartframes.length > 0 && (
+                  <p className="text-[10px] text-slate-400 mb-2">
+                    Base {pack.base.basePvp} € + Heartframes {hfTotal} €
+                    {pack.accessories.length > 0 && " + accesorios"}
+                    {" = "}<span className="font-black text-slate-600">{pack.base.basePvp + hfTotal} € suelto</span>
+                  </p>
+                )}
+
+                <p className="text-[10px] text-slate-400 leading-relaxed mb-1.5">{pack.note}</p>
+                <p className="text-[10px] font-black text-slate-500 uppercase tracking-wide">
+                  Target → <span className="normal-case font-normal text-slate-400">{pack.target}</span>
+                </p>
+              </div>
+            );
+          })}
+        </div>
+        <div className="mt-4 bg-violet-50 border border-violet-100 rounded-2xl px-4 py-3 text-xs text-violet-800">
+          <span className="font-black">Los Heartframes son el upsell principal. </span>
+          HF Standard ~{HEARTFRAME_MARGIN}% margen · Todos los modelos se fabrican en Bambu (PLA + chip NFC + imanes).
+          Sin Heartframes el cliente puede comprar solo el ALIGN board y añadir sus propios cuadros con HF comprados sueltos.
+        </div>
+      </section>
+
+      {/* ── 4. RENTABILIDAD POR PRODUCTO ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
           Rentabilidad por Tamaño — Perfil España
@@ -285,7 +507,7 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 3. MOQ IMANES ─── */}
+      {/* ── 5. MOQ IMANES ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
           MOQ Imanes D5×2mm — ¿Cuántos comprar?
@@ -341,7 +563,7 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 4. PERFIL — ES vs CN BREAKEVEN ─── */}
+      {/* ── 6. PERFIL — ES vs CN BREAKEVEN ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
           Perfil SEG — ¿Cuándo Pasarse a China?
@@ -390,7 +612,7 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 5. CAPITAL INICIAL ─── */}
+      {/* ── 7. CAPITAL INICIAL ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
           Capital Inicial Necesario
@@ -442,7 +664,7 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 6. PROYECCIÓN MENSUAL ─── */}
+      {/* ── 8. PROYECCIÓN MENSUAL ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
           Proyección por Volumen Mensual
@@ -489,7 +711,150 @@ export default function StrategyPage() {
         </div>
       </section>
 
-      {/* ── 7. DECISIONES PENDIENTES ─── */}
+      {/* ── 9. SERVICIO DE INSTALACIÓN ─── */}
+      <section>
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+          Servicio de Instalación White-Glove
+        </h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Equipo externo colaborador · base Málaga · se cobra aparte del producto ·
+          target B2B (hoteles, oficinas, retail)
+        </p>
+
+        {/* Tarifas y supuestos */}
+        <div className="grid grid-cols-3 gap-4 mb-5">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tarifa colaborador</div>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Solo (≤3 paneles)</span>
+                <span className="text-sm font-black text-slate-900">€{INSTALL_RATES.soloPerH}/h</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Dúo (≥6 paneles)</span>
+                <span className="text-sm font-black text-slate-900">€{INSTALL_RATES.duoPerH}/h</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Tiempo en local</div>
+            <div className="space-y-1.5">
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Setup fijo</span>
+                <span className="text-xs font-black text-slate-700">{INSTALL_RATES.setupMin} min</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Por panel (solo)</span>
+                <span className="text-xs font-black text-slate-700">{INSTALL_RATES.panelMinSolo} min/panel</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Por panel (dúo)</span>
+                <span className="text-xs font-black text-slate-700">{INSTALL_RATES.panelMinDuo} min/panel</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-xs text-slate-600">Cierre + walkthrough</span>
+                <span className="text-xs font-black text-slate-700">{INSTALL_RATES.closeMin} min</span>
+              </div>
+            </div>
+          </div>
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4">
+            <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-2">Zonas de desplazamiento</div>
+            <div className="space-y-1.5">
+              {INSTALL_RATES.zones.map(z => (
+                <div key={z.id} className="flex justify-between items-center">
+                  <span className="text-xs text-slate-600">{z.label}</span>
+                  <span className="text-xs font-black text-slate-700">
+                    {z.id === "national" ? "A medida" : `+€${z.fuelEUR} fuel · ${z.travelH}h viaje`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Tabla de precios por tamaño */}
+        <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden mb-4">
+          <table className="w-full text-xs">
+            <thead>
+              <tr className="bg-slate-900 text-white">
+                <th className="text-left px-4 py-3 font-black text-[10px] uppercase tracking-wide">Tamaño</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Equipo</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Tiempo local</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Coste real</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide text-lime-400">PVP Local</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide text-amber-400">PVP Regional</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Margen serv.</th>
+                <th className="text-right px-4 py-3 font-black text-[10px] uppercase tracking-wide">Ticket total</th>
+                <th className="text-center px-4 py-3 font-black text-[10px] uppercase tracking-wide">Margen combi.</th>
+              </tr>
+            </thead>
+            <tbody>
+              {INSTALLATION_TABLE.map((row, idx) => (
+                <tr key={row.size} className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"}>
+                  <td className="px-4 py-3 font-black text-slate-900">{row.size}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`text-[9px] font-black px-2 py-0.5 rounded-full ${
+                      row.team === "dúo"
+                        ? "bg-purple-100 text-purple-700"
+                        : "bg-blue-100 text-blue-700"
+                    }`}>
+                      {row.team}
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-center text-slate-600 tabular-nums">{row.onSiteMin} min</td>
+                  <td className="px-4 py-3 text-right text-slate-500 tabular-nums">€{row.totalCostLocal}</td>
+                  <td className="px-4 py-3 text-right font-black text-slate-900 tabular-nums">€{row.pvpLocal}</td>
+                  <td className="px-4 py-3 text-right font-semibold text-amber-700 tabular-nums">€{row.pvpRegional}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`text-[10px] font-black ${row.marginPctLocal >= 45 ? "text-green-600" : "text-amber-600"}`}>
+                      {row.marginPctLocal}%
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right font-black text-slate-900 tabular-nums">€{row.combinedTicket}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`text-[10px] font-black ${row.combinedMarginPct >= 65 ? "text-green-600" : row.combinedMarginPct >= 55 ? "text-amber-600" : "text-red-500"}`}>
+                      {row.combinedMarginPct}%
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          <div className="px-4 py-2 bg-slate-50 border-t border-slate-100 text-[10px] text-slate-500">
+            Coste real = labor colaborador + combustible zona local (0–50 km). PVP = coste × 2.2× redondeado. Regional = +80€ sobre PVP local. Ticket total = PVP producto ALIGN + instalación local.
+          </div>
+        </div>
+
+        {/* Nota estratégica */}
+        <div className="bg-slate-900 rounded-2xl p-5 text-white">
+          <div className="grid grid-cols-3 gap-6 text-sm">
+            <div>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-wide mb-1.5">¿Cuándo ofrecerlo?</p>
+              <p className="text-slate-200 text-xs leading-relaxed">
+                Solo para B2B: hoteles, oficinas, retail. El cliente DTC monta solo con la guía.
+                Ofrecer instalación en presupuesto custom — no como opción en web.
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-wide mb-1.5">Quién instala</p>
+              <p className="text-slate-200 text-xs leading-relaxed">
+                Colaborador externo: manitas / handyman / técnico de montaje. Tarifas €25–35/h
+                en Málaga. Para instalaciones grandes o nacionales: empresa de montaje con seguro RC.
+              </p>
+            </div>
+            <div>
+              <p className="text-slate-400 text-[10px] font-black uppercase tracking-wide mb-1.5">Impacto en margen</p>
+              <p className="text-slate-200 text-xs leading-relaxed">
+                La instalación baja el margen combinado ~5–8% vs vender solo el producto.
+                Pero sube el ticket medio: Joy €499 → €649 (+€150). En B2B el cliente espera
+                este servicio — sin él, el deal puede no cerrarse.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ── 10. DECISIONES PENDIENTES ─── */}
       <section>
         <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-4">
           Decisiones Pendientes
@@ -516,6 +881,77 @@ export default function StrategyPage() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* ── 11. CATÁLOGO DE PROVEEDORES — PRECIOS REALES ─── */}
+      <section>
+        <h2 className="text-xs font-black text-slate-400 uppercase tracking-widest mb-1">
+          Catálogo de Proveedores — Precios Reales
+        </h2>
+        <p className="text-xs text-slate-400 mb-4">
+          Fuentes investigadas · 2026-03-25 ·
+          <span className="ml-1 inline-flex gap-2">
+            <span className="bg-green-100 text-green-700 text-[9px] font-black px-1.5 py-0.5 rounded-full">confirmed</span>
+            <span className="bg-amber-100 text-amber-700 text-[9px] font-black px-1.5 py-0.5 rounded-full">estimated</span>
+            <span className="bg-red-100 text-red-700 text-[9px] font-black px-1.5 py-0.5 rounded-full">pending</span>
+          </span>
+        </p>
+
+        {SUPPLIER_CATEGORIES.map((cat) => {
+          const items = SUPPLIERS_CATALOG.filter(s => s.category === cat);
+          return (
+            <div key={cat} className="mb-6">
+              <h3 className="text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2">{cat}</h3>
+              <div className="bg-white rounded-3xl border border-slate-100 shadow-sm overflow-hidden">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="bg-slate-50 text-slate-500 border-b border-slate-100">
+                      <th className="text-left px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">Item</th>
+                      <th className="text-left px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">Proveedor</th>
+                      <th className="text-right px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">Precio</th>
+                      <th className="text-center px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">MOQ</th>
+                      <th className="text-center px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">Status</th>
+                      <th className="text-left px-4 py-2.5 font-black text-[9px] uppercase tracking-wide">Notas</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {items.map((s, idx) => (
+                      <tr
+                        key={s.id}
+                        className={idx % 2 === 0 ? "bg-white" : "bg-slate-50/40"}
+                      >
+                        <td className="px-4 py-2.5 font-semibold text-slate-800 text-[11px]">{s.item}</td>
+                        <td className="px-4 py-2.5 text-slate-500 text-[10px]">
+                          <div className="font-semibold">{s.supplier}</div>
+                          <div className="text-slate-400">{s.country}</div>
+                        </td>
+                        <td className="px-4 py-2.5 text-right font-black text-slate-900 text-[12px] tabular-nums">
+                          €{s.priceEUR.toFixed(2)}
+                          <span className="text-[9px] text-slate-400 font-normal">/{s.priceUnit}</span>
+                        </td>
+                        <td className="px-4 py-2.5 text-center text-[10px] text-slate-500">
+                          {s.moq === null ? "—" : s.moq.toLocaleString()}
+                        </td>
+                        <td className="px-4 py-2.5 text-center">
+                          <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-full ${
+                            s.status === "confirmed"
+                              ? "bg-green-100 text-green-700"
+                              : s.status === "estimated"
+                              ? "bg-amber-100 text-amber-700"
+                              : "bg-red-100 text-red-700"
+                          }`}>
+                            {s.status}
+                          </span>
+                        </td>
+                        <td className="px-4 py-2.5 text-[10px] text-slate-500 max-w-xs">{s.notes}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          );
+        })}
       </section>
 
     </div>
