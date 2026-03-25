@@ -585,18 +585,32 @@ export const SUPPLIERS_CATALOG: SupplierEntry[] = [
 
   // ─── TELA SEG ─────────────────────────────────────────────────────────────
   {
-    id:         "tela-phoneto",
+    id:         "tela-phoneto-m",
     category:   "Tela SEG",
-    item:        "Tela SEG impresa (City Fabrics)",
-    supplier:    "Changzhou Phoneto",
+    item:        "Tela SEG impresa M (79.4×79.4cm)",
+    supplier:    "Changzhou Phoneto (Leo)",
     country:     "CN",
-    priceEUR:    parseFloat((6.00 * USD_EUR).toFixed(2)),
-    priceUnit:   "panel",   // por tablero 780×390mm
+    priceEUR:    parseFloat((6.60 * USD_EUR).toFixed(2)),   // $6.60 USD @300 confirmado
+    priceUnit:   "panel",
     moq:         300,
-    leadTimeDays: 21,
-    status:      "estimated",
-    source:      "Estimado $6 USD/panel. MOQ ~300 ud. Negociar muestra MOQ 50.",
-    notes:       "MOQ 300 bloquea lanzamiento. PENDIENTE negociar MOQ 50 para fase 1.",
+    leadTimeDays: 5,
+    status:      "confirmed",
+    source:      "Phoneto Quotation Sheet 2023 + Proforma Invoice PT-XYH22080802. Tel +86(519)-88127708.",
+    notes:       "M = 79.4×79.4cm. Precio: $6.60@300 / $6.30@500 / $6.00@1000. MOQ 300 — negociar reducción a 50 (email RFQ enviado). Polyester printing, silicone edge, double line sewing.",
+  },
+  {
+    id:         "tela-phoneto-l",
+    category:   "Tela SEG",
+    item:        "Tela SEG impresa L (118.4×79.4cm)",
+    supplier:    "Changzhou Phoneto (Leo)",
+    country:     "CN",
+    priceEUR:    parseFloat((9.90 * USD_EUR).toFixed(2)),   // $9.90 USD @300 confirmado
+    priceUnit:   "panel",
+    moq:         300,
+    leadTimeDays: 5,
+    status:      "confirmed",
+    source:      "Phoneto Quotation Sheet 2023. Tel +86(519)-88127708.",
+    notes:       "L = 118.4×79.4cm. Precio: $9.90@300 / $9.45@500 / $9.00@1000. Aplica a Phoenix Wall Joy/Geo/Gea (double panel).",
   },
 
   // ─── TABLERO BASE ─────────────────────────────────────────────────────────
@@ -766,6 +780,35 @@ export const SUPPLIERS_CATALOG: SupplierEntry[] = [
     status:      "confirmed",
     source:      "Terrence cotización confirmada — $0.84 USD/set5",
     notes:       "PVP sugerido €15-20/set. Margen >90%.",
+  },
+
+  {
+    id:         "acc-wing-goldcattle",
+    category:   "Accesorios",
+    item:        "Wing / Nest / Hook (alternativa)",
+    supplier:    "Xiamen Goldcattle (Coco Chau)",
+    country:     "CN",
+    priceEUR:    parseFloat((1.20 * USD_EUR).toFixed(2)),   // L9 @500
+    priceUnit:   "ud",
+    moq:         50,
+    leadTimeDays: 18,
+    status:      "confirmed",
+    source:      "Cotización 5502-Q1-V1 Dec 10 2025. Tel +86-189-6518-3141. EXW Xiamen.",
+    notes:       "L9=$1.2@500 · Hook=$1.4@500 · Wing=$5.5@500 · Nest=$5.9@500. Alternativa a Terrence. Comparar CIF con flete.",
+  },
+  {
+    id:         "acc-acrylic-yitianfeng",
+    category:   "Accesorios",
+    item:        "Panel acrílico SEG (accesorio magnético)",
+    supplier:    "Shenzhen Yitianfeng (Sily)",
+    country:     "CN",
+    priceEUR:    parseFloat((0.43 * USD_EUR).toFixed(3)),   // Acrylic 9 @100
+    priceUnit:   "ud",
+    moq:         10,
+    leadTimeDays: 25,
+    status:      "confirmed",
+    source:      "Cotización Nov 18 2025. ytfeng@yitianfeng.com · CNC. EXW.",
+    notes:       "9-hole small: $0.43@100 / $0.34@500. 21-hole: $0.57@100. 45-hole Wing: $1.43@100. Muy económico para volumen.",
   },
 
   // ─── CONSUMIBLES ─────────────────────────────────────────────────────────
