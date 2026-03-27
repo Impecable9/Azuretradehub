@@ -17,7 +17,7 @@ export default function LandingPage() {
               Iniciar sesión
             </Link>
             <Link
-              href="/dashboard"
+              href="/waitlist"
               className="bg-white text-black text-sm font-bold px-4 py-2 rounded-lg hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95"
             >
               Solicitar acceso
@@ -68,7 +68,7 @@ export default function LandingPage() {
           <FadeUp delay={0.3}>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
-                href="/dashboard"
+                href="/waitlist"
                 className="group inline-flex items-center justify-center gap-2 bg-white text-black font-bold px-8 py-4 rounded-xl text-base hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95 shadow-lg shadow-white/10"
               >
                 Empezar gratis
@@ -97,7 +97,7 @@ export default function LandingPage() {
                   <div className="w-3 h-3 rounded-full bg-green-500/60" />
                 </div>
                 <div className="flex-1 mx-4 bg-white/5 rounded-md px-3 py-1 text-xs text-zinc-500 font-mono">
-                  azuretradehub.com/dashboard
+                  azuretradehub.com/waitlist
                 </div>
               </div>
               <div className="p-6 flex gap-4 min-h-[280px]">
@@ -268,10 +268,10 @@ export default function LandingPage() {
               Acceso anticipado gratuito durante la fase MVP.<br />Sin tarjeta de crédito.
             </p>
             <Link
-              href="/dashboard"
+              href="/waitlist"
               className="group inline-flex items-center gap-2 bg-white text-black font-bold px-10 py-5 rounded-xl text-lg hover:bg-zinc-100 transition-all hover:scale-105 active:scale-95 shadow-xl shadow-white/10"
             >
-              Entrar al panel
+              Unirse a la lista de espera
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>

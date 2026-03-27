@@ -217,7 +217,10 @@ model Waitlist {
   id        String   @id @default(cuid())
   email     String   @unique
   name      String?
-  image     String?
+  company   String?
+  role      String?
+  industry  String?
+  useCase   String?
   createdAt DateTime @default(now())
   notified  Boolean  @default(false)
 }
