@@ -26,7 +26,7 @@ const STATUS_MAP: Record<string, { label: string; color: string }> = {
 };
 
 export default async function DashboardPage() {
-  const [quotes, supplierCount, rfqs, messages, rawWaitlist] = await Promise.all([
+  const [quotes, supplierCount, rfqs, rawWaitlist] = await Promise.all([
     prisma.quote.findMany({
       where: { organizationId: ORG_ID },
       include: { lines: { include: { supplier: true } }, rfqs: { include: { responses: true } } },
@@ -38,7 +38,6 @@ export default async function DashboardPage() {
       include: { responses: true },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.message.count({ where: { conversation: { organizationId: ORG_ID } } }),
     prisma.waitlist.findMany({
       orderBy: { createdAt: "desc" },
       take: 10,
