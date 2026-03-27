@@ -50,7 +50,7 @@ export default async function DashboardPage() {
   const totalAll = accepted.reduce((s, q) => s + (q.totalCost ?? 0), 0);
   const allLines = quotes.flatMap((q) => q.lines);
   const missingPrices = allLines.filter((l) => !l.unitCost);
-  const pendingRFQs    = 0;
+  const pendingRFQs: any[] = [];
   const respondedRFQs: any[] = [];
 
   const recentQuotes = quotes.slice(0, 5);
