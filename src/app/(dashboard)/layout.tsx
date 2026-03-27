@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3, TrendingUp, Truck, Target, Inbox } from "lucide-react";
+import { LayoutDashboard, FileText, Users, Settings, LogOut, Grid3x3, TrendingUp, Truck, Target, Inbox, Mail } from "lucide-react";
 import { ChatDrawer } from "@/components/chat/ChatDrawer";
 import { auth, signOut } from "@/lib/auth";
 import { redirect } from "next/navigation";
@@ -16,6 +16,7 @@ const navItems = [
   { href: "/strategy",    icon: Target,     label: "Estrategia" },
   { href: "/suppliers",   icon: Users,      label: "Proveedores" },
   { href: "/leads",       icon: Inbox,      label: "Leads" },
+  { href: "/emails",      icon: Mail,       label: "Emails" },
   { href: "/settings",  icon: Settings,         label: "Configuración" },
 ];
 

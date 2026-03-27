@@ -225,6 +225,19 @@ model Waitlist {
   notified  Boolean  @default(false)
 }
 
+model EmailLog {
+  id        String   @id @default(cuid())
+  direction String   // "sent" | "received"
+  from      String
+  to        String
+  subject   String
+  bodyText  String?
+  bodyHtml  String?
+  status    String   @default("ok") // "ok" | "failed" | "pending"
+  resendId  String?
+  createdAt DateTime @default(now())
+}
+
 model OrganizationSupplier {
   organizationId String
   supplierId     String
