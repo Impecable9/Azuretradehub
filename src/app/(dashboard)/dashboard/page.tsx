@@ -29,13 +29,12 @@ export default async function DashboardPage() {
   const [quotes, supplierCount, rfqs, rawWaitlist] = await Promise.all([
     prisma.quote.findMany({
       where: { organizationId: ORG_ID },
-      include: { lines: { include: { supplier: true } }, rfqs: { include: { responses: true } } },
+      include: { lines: true, rfqs: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.supplier.count(),
     prisma.rFQ.findMany({
       where: { quote: { organizationId: ORG_ID } },
-      include: { responses: true },
       orderBy: { createdAt: "desc" },
     }),
     prisma.waitlist.findMany({
@@ -55,8 +54,8 @@ export default async function DashboardPage() {
   const totalAll = accepted.reduce((s, q) => s + (q.totalCost ?? 0), 0);
   const allLines = quotes.flatMap((q) => q.lines);
   const missingPrices = allLines.filter((l) => !l.unitCost);
-  const pendingRFQs = rfqs.filter((r) => r.status === "pending");
-  const respondedRFQs = rfqs.filter((r) => r.status === "responded");
+  const pendingRFQs    = rfqs.filter((r: any) => r.status === "pending");
+  const respondedRFQs  = rfqs.filter((r: any) => r.status === "responded");
 
   const recentQuotes = quotes.slice(0, 5);
   const phoenixQuote = quotes.find((q) => q.title.toLowerCase().includes("phoenix"));
