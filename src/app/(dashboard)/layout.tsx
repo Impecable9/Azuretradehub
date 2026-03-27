@@ -45,18 +45,16 @@ export default async function DashboardLayout({ children }: { children: React.Re
             </div>
           </Link>
 
-          {/* Nav icons — center */}
-          <nav className="flex items-center gap-1 flex-1 justify-center">
+          {/* Nav — center */}
+          <nav className="flex items-center gap-0.5 flex-1 justify-center">
             {navItems.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="relative group w-9 h-9 flex items-center justify-center rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150"
+                className="relative group flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl text-slate-400 hover:text-slate-900 hover:bg-slate-100 transition-all duration-150"
               >
                 <item.icon className="w-4 h-4" strokeWidth={1.75} />
-                <span className="pointer-events-none absolute top-full mt-2 left-1/2 -translate-x-1/2 bg-slate-900 text-white text-[10px] font-bold px-2.5 py-1 rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-50 shadow-lg">
-                  {item.label}
-                </span>
+                <span className="text-[9px] font-bold tracking-wide leading-none">{item.label}</span>
               </Link>
             ))}
           </nav>

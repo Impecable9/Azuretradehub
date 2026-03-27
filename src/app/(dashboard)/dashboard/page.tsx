@@ -2,7 +2,7 @@ export const dynamic = "force-dynamic";
 
 import { prisma } from "@/lib/db";
 import Link from "next/link";
-import { ArrowRight, ChevronRight, Package, AlertCircle, Clock, CheckCircle, Users, Briefcase, Building2 } from "lucide-react";
+import { ArrowRight, ChevronRight, AlertCircle, CheckCircle, Building2, Truck, Target, TrendingUp, Grid3x3, FileText } from "lucide-react";
 
 const ORG_ID = process.env.OWNER_ORG_ID ?? "seed-org-id";
 
@@ -148,6 +148,26 @@ export default async function DashboardPage() {
             ))}
           </div>
         </div>
+      </div>
+
+      {/* Quick access — new sections */}
+      <div className="grid grid-cols-5 gap-3">
+        {[
+          { href: "/quotes",      icon: FileText,    label: "Presupuestos", sub: "RFQs y pedidos" },
+          { href: "/products",    icon: Grid3x3,     label: "Productos",    sub: "Catálogo Phoenix Wall" },
+          { href: "/pricing",     icon: TrendingUp,  label: "Precios",      sub: "Calculadora costes" },
+          { href: "/operations",  icon: Truck,       label: "Operaciones",  sub: "BOM · proveedores · PDFs" },
+          { href: "/strategy",    icon: Target,      label: "Estrategia",   sub: "MOQ · márgenes · plan" },
+        ].map(({ href, icon: Icon, label, sub }) => (
+          <Link key={href} href={href}
+            className="bg-white rounded-2xl border border-slate-100 shadow-sm p-4 flex flex-col gap-2 hover:border-indigo-200 hover:shadow-md transition-all group">
+            <Icon className="w-5 h-5 text-slate-400 group-hover:text-indigo-500 transition-colors" strokeWidth={1.75} />
+            <div>
+              <div className="text-sm font-black text-slate-900">{label}</div>
+              <div className="text-[10px] text-slate-400 leading-tight mt-0.5">{sub}</div>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* History */}

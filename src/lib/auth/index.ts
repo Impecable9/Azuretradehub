@@ -25,7 +25,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         await prisma.waitlist.upsert({
           where: { email: user.email ?? "" },
           update: {},
-          create: { email: user.email ?? "", name: user.name, image: user.image },
+          create: { email: user.email ?? "", name: user.name },
         });
       } catch { /* silencioso */ }
       return "/en-espera";
