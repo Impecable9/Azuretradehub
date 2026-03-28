@@ -14,7 +14,21 @@ export const MAGNET_D5x3_EUR  = 0.069;  // D5×3mm — accessories (Zetar confir
 // ── NFC ───────────────────────────────────────────────────────────────────────
 // NFC chip goes in Heartframes (cuadros magnéticos), NOT in base panels.
 // Each Heartframe embeds 1 chip. Not a standalone product — internal component.
-export const NFC_CHIP_USD = 0.12;  // IDN7645 · IDRFID Shenzhen
+//
+// NEW SPEC: large-format NTAG213 sticker 48×78mm (antenna 45×75mm = max for NTAG213).
+// The NTAG213 antenna has a physical ceiling at ~76×45mm — larger sticker = no more range.
+// 70×50mm is the sweet spot for Phoenix Wall branding + max read distance.
+//
+// Suppliers researched (2026-03):
+//   Seritag 48×78mm White:   €0.42/ud @1K (EU, no MOQ — best for prototype)
+//   GoToTags 80×50mm Rect:   $0.24/ud @10K (US, NDEF pre-formatted)
+//   ShopNFC 85×54mm:         €0.46/ud @1K (FR, custom print available)
+//   ZBTech custom 70×50mm:   ~$0.15/ud @500 (CN, logo/artwork, contact: Catherine@zbtechsz.com)
+//
+// Recommendation: Seritag for prototype → ZBTech custom for production
+export const NFC_CHIP_USD = 0.12;  // IDN7645 small (current) — to replace with large format
+export const NFC_CHIP_LARGE_EUR = 0.42; // Seritag 48×78mm @1K — prototype
+export const NFC_CHIP_LARGE_PROD_USD = 0.15; // ZBTech custom 70×50mm @500 — production target
 export const NFC_CHIP_EUR = NFC_CHIP_USD * USD_EUR;
 
 // ── MAGNET PHYSICS — VERTICAL HOLDING FORCE ───────────────────────────────────
@@ -539,9 +553,37 @@ export const SUPPLIERS_CATALOG: SupplierEntry[] = [
 
   // ─── NFC ──────────────────────────────────────────────────────────────────
   {
+    id:         "nfc-seritag-48x78",
+    category:   "NFC",
+    item:        "NFC Sticker NTAG213 — 48×78mm (antena 45×75mm, máx. posible)",
+    supplier:    "Seritag",
+    country:     "EU",
+    priceEUR:    0.42,
+    priceUnit:   "ud",
+    moq:         10,
+    leadTimeDays: 5,
+    status:      "pending",
+    source:      "seritag.com — €0.42/ud @1K. Sin MOQ mínimo. Sirve para prototipos.",
+    notes:       "Tamaño máximo funcional para NTAG213 (techo físico antena ~76×45mm). Va en Heartframes. 1 ud/Heartframe. Sin app — NFC Tools iOS/Android.",
+  },
+  {
+    id:         "nfc-zbtechsz-custom",
+    category:   "NFC",
+    item:        "NFC Sticker NTAG213 — 70×50mm custom (logo Phoenix Wall)",
+    supplier:    "ZBTech Shenzhen",
+    country:     "CN",
+    priceEUR:    parseFloat((0.15 * USD_EUR).toFixed(4)),
+    priceUnit:   "ud",
+    moq:         500,
+    leadTimeDays: 20,
+    status:      "pending",
+    source:      "nfcntag.com · Catherine@zbtechsz.com · WhatsApp +86 13411865164",
+    notes:       "Custom 70×50mm con logo/artwork Phoenix Wall. Pedir cotización. Objetivo producción.",
+  },
+  {
     id:         "nfc-idn7645-idrfid",
     category:   "NFC",
-    item:        "Chip NFC IDN7645",
+    item:        "Chip NFC IDN7645 (pequeño — 76×45mm, versión actual)",
     supplier:    "IDRFID Shenzhen",
     country:     "CN",
     priceEUR:    parseFloat((0.12 * USD_EUR).toFixed(4)),
@@ -550,7 +592,7 @@ export const SUPPLIERS_CATALOG: SupplierEntry[] = [
     leadTimeDays: 15,
     status:      "confirmed",
     source:      "IDRFID cotización — $0.12 USD/ud, MOQ 1 rollo = 1000 ud",
-    notes:       "Va en Heartframes (1 chip/unidad). Sin app. Programable con NFC Tools (iOS/Android).",
+    notes:       "Versión actual — sustituir por formato grande (Seritag / ZBTech).",
   },
 
   // ─── PERFIL SEG ───────────────────────────────────────────────────────────
