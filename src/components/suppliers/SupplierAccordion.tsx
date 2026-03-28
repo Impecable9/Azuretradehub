@@ -38,7 +38,8 @@ function categorize(suppliers: Supplier[]): Category[] {
     { label: "Metal / Chapa",       color: "text-slate-700",  bg: "bg-slate-100", dot: "bg-slate-400",  keywords: ["acero", "chapa", "hierros", "metal", "inox", "manzano", "bricometal"] },
     { label: "Perfilería SEG",      color: "text-blue-700",   bg: "bg-blue-50",   dot: "bg-blue-400",   keywords: ["seg", "perfil", "silicona", "texfix", "texframe", "depapel", "impretienda", "ecotex"] },
     { label: "Textil / Impresión",  color: "text-purple-700", bg: "bg-purple-50", dot: "bg-purple-400", keywords: ["tela", "textil", "sublimación", "impresión", "imprenta"] },
-    { label: "Electrónica / NFC",   color: "text-green-700",  bg: "bg-green-50",  dot: "bg-green-400",  keywords: ["nfc", "chip", "ntag", "shopnfc", "rfid", "imán", "iman", "neodimio", "magnet"] },
+    { label: "Imanes / Neodimio",   color: "text-cyan-700",   bg: "bg-cyan-50",   dot: "bg-cyan-400",   keywords: ["imán", "iman", "neodimio", "magnet", "zetar", "wendy"] },
+    { label: "Electrónica / NFC",   color: "text-green-700",  bg: "bg-green-50",  dot: "bg-green-400",  keywords: ["nfc", "chip", "ntag", "shopnfc", "rfid", "idrfid"] },
     { label: "Adhesivos / Otros",   color: "text-rose-700",   bg: "bg-rose-50",   dot: "bg-rose-400",   keywords: ["epoxy", "epoxi", "adhesivo", "cristal", "vidrio", "marco", "enmarcado"] },
   ];
 
